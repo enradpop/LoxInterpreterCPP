@@ -13,6 +13,8 @@ SRC_DIR := .
 # Output directory
 BUILD_DIR := build
 
+#TODO: add header files as deps
+#TODO: add AST generation step
 # Find all CPP files in the source directory
 SRC_FILES := $(wildcard $(SRC_DIR)/*.cpp)
 

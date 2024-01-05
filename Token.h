@@ -34,7 +34,7 @@ public:
     }
     TokenType _type;
     std::string _lexeme;
-    void * _literal; //TODO: figure out what does this represent
+    void * _literal; //we store string or number literals here; the original java impl uses Object
     int _line;
 
 
