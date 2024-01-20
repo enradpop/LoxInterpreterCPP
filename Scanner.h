@@ -11,7 +11,7 @@ public:
     void scanToken();
     char advance();
     void addToken(Token::TokenType type);
-    void addToken(Token::TokenType type, void* literal);
+    void addToken(Token::TokenType type, LiteralValue const & literal);
     bool match(char expected);
     char peek();
     char peekNext();
@@ -31,8 +31,8 @@ private:
         {"true", Token::TRUE}, {"var", Token::VAR}, {"while", Token::WHILE} };
     std::string _source;
     std::vector<Token> _tokens;
-    int _start = 0;
-    int _current = 0;
+    size_t _start = 0;
+    size_t _current = 0;
     int _line = 1;
 
 };

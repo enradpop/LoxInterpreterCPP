@@ -9,6 +9,6 @@ int main(int argc, char** argv) {
         Lox::runFile(argv[1]);
     }
     else {
-        Lox::runPrompt(); 
+        Lox::runPrompt();
     }
 }

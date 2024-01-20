@@ -1,5 +1,9 @@
 #pragma once
 #include <string>
+#include <variant>
+#include <optional>
+
+using LiteralValue = std::optional<std::variant<double, std::string>>;
 
 class Token {
 public:
@@ -18,23 +22,23 @@ public:
 
         END_OF_FILE
     };
-    Token(TokenType type, std::string const & lexeme, void* literal, int line) :
+    Token(TokenType type, std::string const & lexeme, LiteralValue literal, int line) :
     _type(type), _lexeme(lexeme), _literal(literal), _line(line)
     {}
 
     std::string toString() {
         std::string literal;
         if (_type == STRING) {
-            literal = *((std::string*)_literal);
+            literal = std::get<std::string>(*_literal);
         }
         else if (_type == NUMBER) {
-            literal = std::to_string(*((double*)_literal));
+            literal = std::to_string(std::get<double>(*_literal));
         }
         return std::to_string(_type) +" " + _lexeme + " " + literal;
     }
     TokenType _type;
     std::string _lexeme;
-    void * _literal; //we store string or number literals here; the original java impl uses Object
+    LiteralValue _literal;
     int _line;
 
 

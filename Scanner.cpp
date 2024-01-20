@@ -6,7 +6,7 @@ std::vector<Token> Scanner::scanTokens() {
         _start = _current;
         scanToken();
     }
-    _tokens.push_back(Token(Token::END_OF_FILE, "", nullptr, _line));
+    _tokens.push_back(Token(Token::END_OF_FILE, "", std::nullopt, _line));
     return _tokens;
 }
 
@@ -89,7 +89,7 @@ void Scanner::stringLiteral() {
     advance();
 
     // Trim the surrounding quotes.
-    std::string* value = new std::string(_source.substr(_start + 1, _current - _start - 2));
+    std::string value = _source.substr(_start + 1, _current - _start - 2);
     addToken(Token::STRING, value);
 }
 
@@ -135,7 +135,7 @@ void Scanner::numberLiteral() {
         }
     }
     std::string doubleStr = _source.substr(_start, _current - _start);
-    addToken(Token::NUMBER, new double(stod(doubleStr)));
+    addToken(Token::NUMBER, stod(doubleStr));
 }
 
 bool Scanner::match(char expected) {
@@ -168,10 +168,12 @@ char Scanner::advance() {
 }
 
 void Scanner::addToken(Token::TokenType type) {
-    addToken(type, nullptr);
+    //addToken(type, nullptr);
+    std::string text = _source.substr(_start, _current - _start);
+    _tokens.push_back({type, text, std::nullopt, _line});
 }
 
-void Scanner::addToken(Token::TokenType type, void* literal) {
+void Scanner::addToken(Token::TokenType type, LiteralValue const & literal) {
     std::string text = _source.substr(_start, _current - _start);
     _tokens.push_back({type, text, literal, _line});
 }
