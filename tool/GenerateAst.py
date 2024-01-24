@@ -14,6 +14,7 @@ def defineAst(outputDir, baseName, types):
         writer.write("#pragma once\n")
         writer.write("#include <memory>\n")
         writer.write("#include \"Token.h\"\n")
+        writer.write("#include \"Logger.h\"\n")
         writer.write("// forward declarations\n")
         writer.write(f"template <typename R> class {baseName[:-3]};\n")
         for type in types:
@@ -54,9 +55,9 @@ def defineType(baseName, className, fieldList):
         type, name = getTypeAndName(field)
         writer += f"{name}({name}), "
     writer = writer[:-2]
-    writer += f"\n\t{{}}\n\n"
+    writer += f"\n\t{{LOG(\"new {className}\");}}\n\n"
     #destructor
-    writer += f"\t~{className}() override {{}}\n\n"
+    writer += f"\t~{className}() override {{LOG(\"delete {className}\")}}\n\n"
     #fields
     writer += "\tR accept(Visitor<R> const& visitor) override {\n"
     writer += f"\t\treturn visitor.visit{className}{baseName[:-3]}(*this);\n"

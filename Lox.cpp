@@ -48,7 +48,8 @@ void Lox::run(std::string const & source) {
     // Stop if there was a syntax error.
     if (_hadError) return;
     AstPrinter printer;
-    std::cout << printer.print(expression);
+    std::cout << printer.print(expression) << "\n";
+    delete expression;
 }
 
 void Lox::error(int line, std::string message) {
