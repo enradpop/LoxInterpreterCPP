@@ -4,6 +4,8 @@
 #include "Lox.h"
 #include "Scanner.h"
 #include "Token.h"
+#include "Parser.h"
+#include "AstPrinter.h"
 
 bool Lox::_hadError = false;
 
@@ -40,10 +42,13 @@ void Lox::runPrompt() {
 void Lox::run(std::string const & source) {
     Scanner scanner(source);
     std::vector<Token> tokens = scanner.scanTokens();
-    for(auto& token : tokens) {
-        //print token
-        std::cout << token.toString() << std::endl ;
-    }
+    Parser parser(tokens);
+    Expr<std::string>* expression = parser.parse<std::string>();
+
+    // Stop if there was a syntax error.
+    if (_hadError) return;
+    AstPrinter printer;
+    std::cout << printer.print(expression);
 }
 
 void Lox::error(int line, std::string message) {
@@ -53,4 +58,12 @@ void Lox::error(int line, std::string message) {
 void Lox::report(int line, std::string where, std::string message) {
     std::cout <<  "[line " << line << "] Error" << where << ": " << message << std::endl;
     _hadError = true;
+}
+
+void Lox::error(Token token, std::string const& message) {
+    if (token._type == Token::END_OF_FILE) {
+      report(token._line, " at end", message);
+    } else {
+      report(token._line, " at '" + token._lexeme + "'", message);
+    }
 }

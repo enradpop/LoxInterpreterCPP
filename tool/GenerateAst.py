@@ -6,10 +6,12 @@ class TokenType(Enum):
     TOKEN = 1
     EXPR = 2
 
+#TODO: visitor triggers need for templatization on return type
 def defineAst(outputDir, baseName, types):
     path = os.path.join(outputDir, f"{baseName[:-3]}.h")
     derivedClasses = []
     with open(path, "w") as writer:
+        writer.write("#pragma once\n")
         writer.write("#include <memory>\n")
         writer.write("#include \"Token.h\"\n")
         writer.write("// forward declarations\n")
