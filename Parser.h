@@ -2,6 +2,7 @@
 #include <vector>
 #include "Token.h"
 #include "Expr.h"
+#include "Stmt.h"
 #include "Lox.h"
 
 class ParseError : public std::exception {
@@ -21,14 +22,40 @@ public:
     {}
 
     template<typename R>
-    Expr<R>* parse() {
+    std::vector<Stmt<R>*> parse() {
         try {
-            return expression<R>();
+            std::vector<Stmt<R>*> statements;
+            while(!isAtEnd()) {
+                statements.emplace_back(statement<R>());
+            }
+
+            return statements;
         } catch (ParseError& error) {
-            return nullptr;
+            return {};
         }
     }
 private:
+    template<typename R>
+    Stmt<R>* statement() {
+        if(match({Token::PRINT}))
+            return printStatement<R>();
+        return expressionStatement<R>();
+    }
+    //Print          → expression
+    template<typename R>
+    Stmt<R>* printStatement() {
+        Expr<R>* value = expression<R>();
+        consume(Token::SEMICOLON, "Expect ';' after value.");
+        return new Print<R>(value);
+    }
+    //ExpressionStmt     → expression
+    template<typename R>
+    Stmt<R>* expressionStatement() {
+        Expr<R>* value = expression<R>();
+        consume(Token::SEMICOLON, "Expect ';' after value.");
+        return new ExpressionStmt<R>(value);
+    }
+
     //expression     → equality ;
     template<typename R>
     Expr<R>* expression() {

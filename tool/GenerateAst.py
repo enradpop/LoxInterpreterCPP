@@ -100,3 +100,6 @@ defineAst(outputDir, "Expr<R>", ["Binary   : Expr<R> left, Token oprtr, Expr<R> 
                               "Grouping : Expr<R> expression",
                               "Literal  : Token value",
                               "Unary    : Token oprtr, Expr<R> right"])
+
+defineAst(outputDir, "Stmt<R>", ["ExpressionStmt    : Expr<R> expression",
+                                 "Print         : Expr<R> expression "])

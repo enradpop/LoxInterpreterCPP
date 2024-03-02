@@ -1,6 +1,8 @@
 #include "Interpreter.h"
 #include "Lox.h"
 
+#include <vector>
+
 ReturnType Interpreter::visitGroupingExpr(Grouping<ReturnType>& expr) {
     return evaluate(*expr.expression);
 }
@@ -80,6 +82,15 @@ ReturnType Interpreter::visitUnaryExpr(Unary<ReturnType>& expr) {
     return nullptr;
 }
 
+void Interpreter::visitExpressionStmt(ExpressionStmt<ReturnType>& exprStmt) {
+    evaluate(*exprStmt.expression);
+}
+
+void Interpreter::visitPrintStmt(Print<ReturnType>& exprStmt) {
+    ReturnType value = evaluate(*exprStmt.expression);
+    std::cout << stringify(value) <<std::endl;
+}
+
 void Interpreter::checkNumberOperand(Token oprtr, ReturnType& operand) {
     if(std::holds_alternative<double>(operand)) return;
     throw RuntimeError(oprtr, "Operand must be a number");
@@ -92,16 +103,19 @@ void Interpreter::checkNumberOperands(Token oprtr, ReturnType& left, ReturnType&
 }
 
 
-void Interpreter::interpret(Expr<ReturnType>& expr) {
-    //TODO err handling
+void Interpreter::interpret(std::vector<Stmt<ReturnType>*> const& statements) {
     try {
-        ReturnType value = evaluate(expr);
-        std::cout << stringify(value) << std::endl;
+        for(auto& s : statements) {
+            execute(*s);
+        }
     }
     catch (RuntimeError& re) {
         Lox::runtimeError(re);
     }
-    
+}
+
+void Interpreter::execute(Stmt<ReturnType>& stmt) {
+    stmt.accept(*this);
 }
 
 bool Interpreter::isTruthy(ReturnType const& object){

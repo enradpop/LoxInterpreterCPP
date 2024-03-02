@@ -1,7 +1,9 @@
 #pragma once
 #include "Expr.h"
+#include "Stmt.h"
 #include <variant>
 #include <memory>
+#include <vector>
 
 class RuntimeError : public std::runtime_error {
 public:
@@ -12,7 +14,7 @@ public:
 
 using ReturnType = std::variant<double, std::string, bool, std::nullptr_t>;
 
-class Interpreter : public Visitor<ReturnType> {
+class Interpreter : public Visitor<ReturnType>, StmtVisitor<ReturnType> {
 public:
     ReturnType visitBinaryExpr(Binary<ReturnType>& expr) override;
     ReturnType visitGroupingExpr(Grouping<ReturnType>& expr) override;
@@ -20,9 +22,12 @@ public:
     ReturnType visitUnaryExpr(Unary<ReturnType>& expr) override;
     void checkNumberOperand(Token oprtr, ReturnType& operand);
     void checkNumberOperands(Token oprtr, ReturnType& left, ReturnType& right);
-    void interpret(Expr<ReturnType>& expr);
+    void interpret(std::vector<Stmt<ReturnType>*> const& statements);
+    void visitExpressionStmt(ExpressionStmt<ReturnType>& expression) override;
+    void visitPrintStmt(Print<ReturnType>& print) override;
 private:
     ReturnType evaluate(Expr<ReturnType>& expr);
+    void execute(Stmt<ReturnType>& stmt);
     bool isTruthy(ReturnType const& object);
     bool isEqual(ReturnType const& left, ReturnType const& right);
     std::string stringify(ReturnType const& object);
