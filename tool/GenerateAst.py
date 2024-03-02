@@ -23,7 +23,7 @@ def defineAst(outputDir, baseName, types):
         writer.write("template <typename R> class Visitor;\n");
         writer.write("\n")
         writer.write(f"template <typename R> class {baseName[:-3]} {{\n")
-        str = "public:\n\tvirtual R accept(Visitor<R> const& visitor) = 0;\n"
+        str = "public:\n\tvirtual R accept(Visitor<R>& visitor) = 0;\n"
         str += "\tvirtual ~Expr(){};\n"
         writer.write(str.expandtabs(4))
         for type in types:
@@ -59,7 +59,7 @@ def defineType(baseName, className, fieldList):
     #destructor
     writer += f"\t~{className}() override {{LOG(\"delete {className}\")}}\n\n"
     #fields
-    writer += "\tR accept(Visitor<R> const& visitor) override {\n"
+    writer += "\tR accept(Visitor<R>& visitor) override {\n"
     writer += f"\t\treturn visitor.visit{className}{baseName[:-3]}(*this);\n"
     writer += "\t}\n\n"
     for field in fields:
@@ -85,7 +85,7 @@ def defineVisitor(baseName, types, writer):
     str += "public:\n"
     for type in types:
         typeName = type.split(":")[0].strip()
-        str += f"\tvirtual R visit{typeName}{baseName[:-3]}({typeName}<R>& {baseName[:-3].lower()}) const = 0;\n"
+        str += f"\tvirtual R visit{typeName}{baseName[:-3]}({typeName}<R>& {baseName[:-3].lower()}) = 0;\n"
 
     str += "};"
     writer.write(str.expandtabs(4))

@@ -6,8 +6,10 @@
 #include <cassert>
 #include "AstPrinter.h"
 
+// bool g_enableLogging = false;
+
 //TODO Should be templated on return type?
-std::string AstPrinter::parenthesize(std::string name, std::vector<std::unique_ptr<Expr<std::string>>>& exprs) const {
+std::string AstPrinter::parenthesize(std::string name, std::vector<std::unique_ptr<Expr<std::string>>>& exprs) {
     std::ostringstream builder;
     builder << "(" << name;
     for(auto& e : exprs) {
@@ -17,23 +19,23 @@ std::string AstPrinter::parenthesize(std::string name, std::vector<std::unique_p
     return builder.str();
 }
 
-std::string AstPrinter::print(Expr<std::string>* expr) const {
+std::string AstPrinter::print(Expr<std::string>* expr) {
     return expr->accept(*this);
 }
 
-std::string AstPrinter::visitBinaryExpr(Binary<std::string>& expr) const {
+std::string AstPrinter::visitBinaryExpr(Binary<std::string>& expr) {
     std::vector<std::unique_ptr<Expr<std::string>>> vect;
     vect.push_back(std::move(expr.left));vect.push_back(std::move(expr.right));
     return parenthesize(expr.oprtr._lexeme, vect);
 }
 
-std::string AstPrinter::visitGroupingExpr(Grouping<std::string>& expr) const {
+std::string AstPrinter::visitGroupingExpr(Grouping<std::string>& expr) {
     std::vector<std::unique_ptr<Expr<std::string>>> vect;
     vect.push_back(std::move(expr.expression));
     return parenthesize("group", vect);
 }
 
-std::string AstPrinter::visitLiteralExpr(Literal<std::string>& expr) const { 
+std::string AstPrinter::visitLiteralExpr(Literal<std::string>& expr) { 
     if(expr.value._type == Token::STRING)
         return std::get<std::string>(*(expr.value._literal));
     else if (expr.value._type == Token::NUMBER)
@@ -42,7 +44,7 @@ std::string AstPrinter::visitLiteralExpr(Literal<std::string>& expr) const {
     return "nil";
 }
 
-std::string AstPrinter::visitUnaryExpr(Unary<std::string>& expr) const {
+std::string AstPrinter::visitUnaryExpr(Unary<std::string>& expr) {
     std::vector<std::unique_ptr<Expr<std::string>>> vect;
     vect.push_back(std::move(expr.right));
     return parenthesize(expr.oprtr._lexeme, vect);

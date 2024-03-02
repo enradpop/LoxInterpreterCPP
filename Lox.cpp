@@ -8,6 +8,9 @@
 #include "AstPrinter.h"
 
 bool Lox::_hadError = false;
+bool Lox::_hadRuntimeError = false;
+
+Interpreter Lox::_interpreter = Interpreter();
 
 bool Lox::runFile(std::string const & path) {
     std::ifstream file(path);
@@ -16,8 +19,8 @@ bool Lox::runFile(std::string const & path) {
         buffer << file.rdbuf();
         run(buffer.str());
         file.close();
-        if(_hadError) {
-            return false;
+        if(_hadError || _hadRuntimeError) {
+            exit(1);
         }
         return true;
     }
@@ -43,13 +46,15 @@ void Lox::run(std::string const & source) {
     Scanner scanner(source);
     std::vector<Token> tokens = scanner.scanTokens();
     Parser parser(tokens);
-    Expr<std::string>* expression = parser.parse<std::string>();
+    //TODO: mem mgmt?
+    Expr<ReturnType>* expression = parser.parse<ReturnType>();
 
     // Stop if there was a syntax error.
     if (_hadError) return;
-    AstPrinter printer;
-    std::cout << printer.print(expression) << "\n";
-    delete expression;
+    _interpreter.interpret(*expression);
+    // AstPrinter printer;
+    // std::cout << printer.print(expression) << "\n";
+    // delete expression;
 }
 
 void Lox::error(int line, std::string message) {
@@ -59,6 +64,11 @@ void Lox::error(int line, std::string message) {
 void Lox::report(int line, std::string where, std::string message) {
     std::cout <<  "[line " << line << "] Error" << where << ": " << message << std::endl;
     _hadError = true;
+}
+
+void Lox::runtimeError(RuntimeError& error) {
+    std::cout << error.what() << "\n[line " << error._token._line << "]\n";
+    _hadRuntimeError == true;
 }
 
 void Lox::error(Token token, std::string const& message) {

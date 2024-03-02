@@ -1,6 +1,7 @@
 #pragma once
 #include "Scanner.h"
 #include "Token.h"
+#include "Interpreter.h"
 
 class Lox {
 public:
@@ -10,6 +11,9 @@ public:
     static void error(int line, std::string message);
     static void report(int line, std::string where, std::string message);
     static void error(Token token, std::string const& message);
+    static void runtimeError(RuntimeError& error);
 private:
     static bool _hadError;
+    static bool _hadRuntimeError;
+    static Interpreter _interpreter;
 };

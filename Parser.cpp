@@ -6,9 +6,9 @@ Token Parser::consume(Token::TokenType type, std::string message) {
 }
 
 //TODO: exc type
-ParseError* Parser::error(Token token, std::string message) {
+ParseError Parser::error(Token token, std::string message) {
     Lox::error(token, message);
-    return new ParseError(message.c_str());
+    return ParseError(message.c_str());
 }
 
 void Parser::synchronize() {

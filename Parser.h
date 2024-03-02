@@ -93,8 +93,8 @@ private:
     //                | "(" expression ")" ;
     template<typename R>
     Expr<R>* primary() {
-        if(match({Token::FALSE})) return new Literal<R>({Token::FALSE, "false", std::nullopt, 1}); //TODO: line number?
-        if(match({Token::TRUE})) return new Literal<R>({Token::TRUE, "true", std::nullopt, 1});
+        if(match({Token::FALSE})) return new Literal<R>({Token::FALSE, "false", false, 1}); //TODO: line number?
+        if(match({Token::TRUE})) return new Literal<R>({Token::TRUE, "true", true, 1});
         if(match({Token::NIL})) return new Literal<R>({Token::NIL, "nil", std::nullopt, 1});
         if(match({Token::NUMBER})) return new Literal<R>({Token::NUMBER, previous()._lexeme, previous()._literal, 1});
         if(match({Token::STRING})) return new Literal<R>({Token::STRING, previous()._lexeme, previous()._literal, 1});
@@ -106,7 +106,7 @@ private:
         throw error(peek(), "Expect expression.");
     }
     Token consume(Token::TokenType type, std::string message);
-    ParseError* error(Token token, std::string message);
+    ParseError error(Token token, std::string message);
     void synchronize();
     bool match(std::vector<Token::TokenType> const & types);
     bool check(Token::TokenType type);

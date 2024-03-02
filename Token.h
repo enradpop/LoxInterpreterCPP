@@ -3,7 +3,7 @@
 #include <variant>
 #include <optional>
 
-using LiteralValue = std::optional<std::variant<double, std::string>>;
+using LiteralValue = std::optional<std::variant<double, std::string, bool>>;
 
 class Token {
 public:
