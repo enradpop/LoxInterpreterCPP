@@ -13,6 +13,7 @@ template <typename R> class Visitor;
 template <typename R> class Expr {
 public:
     virtual R accept(Visitor<R>& visitor) = 0;
+    virtual bool isLValue() {return false;}
     virtual ~Expr(){};
 };
 
@@ -83,7 +84,19 @@ public:
         return visitor.visitVariableExpr(*this);
     }
 
+    bool isLValue() override {return true;}
+
     Token name;
+};
+
+template <typename R> class Assign : public Expr<R> {
+public:
+    Assign(Token const& name, Expr<R>* value) : name(name), value(value) {}
+    R accept(Visitor<R>& visitor) override {
+        return visitor.visitAssignExpr(*this);
+    }
+    Token name;
+    std::unique_ptr<Expr<R>> value;
 };
 
 template <typename R> class Visitor {
@@ -93,4 +106,5 @@ public:
     virtual R visitLiteralExpr(Literal<R>& expr) = 0;
     virtual R visitUnaryExpr(Unary<R>& expr) = 0;
     virtual R visitVariableExpr(Variable<R>& expr) = 0;
+    virtual R visitAssignExpr(Assign<R>& expr) = 0;
 };

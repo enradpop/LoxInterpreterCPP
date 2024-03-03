@@ -86,6 +86,12 @@ ReturnType Interpreter::visitVariableExpr(Variable<ReturnType>& expr) {
     return _environment.get(expr.name);
 }
 
+ReturnType Interpreter::visitAssignExpr(Assign<ReturnType>& expr) {
+    ReturnType value = evaluate(*expr.value);
+    _environment.assign(expr.name, value);
+    return value;
+}
+
 void Interpreter::visitExpressionStmt(ExpressionStmt<ReturnType>& exprStmt) {
     evaluate(*exprStmt.expression);
 }

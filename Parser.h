@@ -79,10 +79,25 @@ private:
         consume(Token::SEMICOLON, "Expect ';' after variable declaration.");
         return new Var<R>(name, initializer);
     }
-    //expression     → equality ;
+    //expression     → assignment ;
     template<typename R>
     Expr<R>* expression() {
-        return equality<R>();
+        return assignment<R>();
+    }
+    //assignment     → IDENTIFIER "=" assignment | equality ;
+    template<typename R>
+    Expr<R>* assignment() {
+        Expr<R>* expr = equality<R>();
+        if(match({Token::EQUAL})) {
+            Token equals = previous();
+            Expr<R>* value  = assignment<R>();
+            if(expr->isLValue()) {
+                Token name = static_cast<Variable<R>*>(expr)->name;
+                return new Assign<R>(name, value);
+            }
+            error(equals, "Invalid assignment target.");
+        }
+        return expr;
     }
     //equality       → comparison ( ( "!=" | "==" ) comparison )* ;
     template<typename R>

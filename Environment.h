@@ -15,6 +15,13 @@ public:
         }
         throw RuntimeError(name, "Undefined variable '" + name._lexeme +"'.");
     }
+    void assign(Token& name, R& value) {
+        if(_values.find(name._lexeme) != _values.end()) {
+            _values[name._lexeme] = value;
+            return;
+        }
+        throw RuntimeError(name, "Undefined variable '" + name._lexeme +"'.");
+    }
 
 private:
     std::unordered_map<std::string, R> _values;
