@@ -42,8 +42,21 @@ public:
     std::unique_ptr<Expr<R>> expression;
 };
 
+template<typename R> class Var : public Stmt<R> {
+public:
+    Var(Token name, Expr<R>* initializer) : name(name), initializer(initializer)
+    {}
+    void accept(StmtVisitor<R>& visitor) override {
+        visitor.visitVarStmt(*this);
+    }
+
+    Token name;
+    std::unique_ptr<Expr<R>> initializer;
+};
+
 template <typename R> class StmtVisitor {
 public:
     virtual void visitExpressionStmt(ExpressionStmt<R>& stmt) = 0;
     virtual void visitPrintStmt(Print<R>& stmt) = 0;
+    virtual void visitVarStmt(Var<R>& stmt) = 0;
 };

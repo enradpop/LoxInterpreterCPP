@@ -82,13 +82,25 @@ ReturnType Interpreter::visitUnaryExpr(Unary<ReturnType>& expr) {
     return nullptr;
 }
 
+ReturnType Interpreter::visitVariableExpr(Variable<ReturnType>& expr) {
+    return _environment.get(expr.name);
+}
+
 void Interpreter::visitExpressionStmt(ExpressionStmt<ReturnType>& exprStmt) {
     evaluate(*exprStmt.expression);
 }
 
-void Interpreter::visitPrintStmt(Print<ReturnType>& exprStmt) {
-    ReturnType value = evaluate(*exprStmt.expression);
+void Interpreter::visitPrintStmt(Print<ReturnType>& printStmt) {
+    ReturnType value = evaluate(*printStmt.expression);
     std::cout << stringify(value) <<std::endl;
+}
+
+void Interpreter::visitVarStmt(Var<ReturnType>& var) {
+    ReturnType value = nullptr;
+    if(var.initializer != nullptr) {
+        value = evaluate(*var.initializer);
+    }
+    _environment.define(var.name._lexeme, value);
 }
 
 void Interpreter::checkNumberOperand(Token oprtr, ReturnType& operand) {

@@ -26,7 +26,7 @@ public:
         try {
             std::vector<Stmt<R>*> statements;
             while(!isAtEnd()) {
-                statements.emplace_back(statement<R>());
+                statements.emplace_back(declaration<R>());
             }
 
             return statements;
@@ -35,27 +35,50 @@ public:
         }
     }
 private:
+    // statement      → exprStmt | printStmt
     template<typename R>
     Stmt<R>* statement() {
         if(match({Token::PRINT}))
             return printStatement<R>();
         return expressionStatement<R>();
     }
-    //Print          → expression
+    // declaration    → varDecl | statement 
+    template<typename R>
+    Stmt<R>* declaration() {
+        try {
+            if(match({Token::VAR})) return varDeclaration<R>();
+            return statement<R>();
+        }
+        catch(ParseError& err) {
+            synchronize();
+            return nullptr;
+        }
+    }
+    //Print          → print expression;
     template<typename R>
     Stmt<R>* printStatement() {
         Expr<R>* value = expression<R>();
         consume(Token::SEMICOLON, "Expect ';' after value.");
         return new Print<R>(value);
     }
-    //ExpressionStmt     → expression
+    //ExpressionStmt     → expression;
     template<typename R>
     Stmt<R>* expressionStatement() {
         Expr<R>* value = expression<R>();
         consume(Token::SEMICOLON, "Expect ';' after value.");
         return new ExpressionStmt<R>(value);
     }
-
+    //varDeclaration     → "var" IDENTIFIER ( "=" expression )? ";" ;
+    template<typename R>
+    Stmt<R>* varDeclaration() {
+        Token name = consume(Token::IDENTIFIER, "Expect variable name.");
+        Expr<R>* initializer = nullptr;
+        if(match({Token::EQUAL})) {
+            initializer = expression<R>();
+        }
+        consume(Token::SEMICOLON, "Expect ';' after variable declaration.");
+        return new Var<R>(name, initializer);
+    }
     //expression     → equality ;
     template<typename R>
     Expr<R>* expression() {
@@ -117,7 +140,7 @@ private:
         return primary<R>();
     }
     // primary        → NUMBER | STRING | "true" | "false" | "nil"
-    //                | "(" expression ")" ;
+    //                | "(" expression ")" | IDENTIFIER ;
     template<typename R>
     Expr<R>* primary() {
         if(match({Token::FALSE})) return new Literal<R>({Token::FALSE, "false", false, 1}); //TODO: line number?
@@ -125,6 +148,7 @@ private:
         if(match({Token::NIL})) return new Literal<R>({Token::NIL, "nil", std::nullopt, 1});
         if(match({Token::NUMBER})) return new Literal<R>({Token::NUMBER, previous()._lexeme, previous()._literal, 1});
         if(match({Token::STRING})) return new Literal<R>({Token::STRING, previous()._lexeme, previous()._literal, 1});
+        if(match({Token::IDENTIFIER})) return new Variable<R>(previous());
         if(match({Token::LEFT_PAREN})) {
             Expr<R>* expr = expression<R>();
             consume(Token::RIGHT_PAREN, "Expect ')' after expression.");
