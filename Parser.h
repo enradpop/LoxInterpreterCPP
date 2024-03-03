@@ -35,12 +35,17 @@ public:
         }
     }
 private:
-    // statement      → exprStmt | printStmt
-    template<typename R>
-    Stmt<R>* statement() {
-        if(match({Token::PRINT}))
-            return printStatement<R>();
-        return expressionStatement<R>();
+    // program        → declaration* EOF ;
+    // block          → "{" declaration* "}" ;
+    template<typename R> 
+    std::vector<std::unique_ptr<Stmt<R>>> block() {
+        std::vector<std::unique_ptr<Stmt<R>>> statements;
+        while (!check(Token::RIGHT_BRACE) && !isAtEnd()) {
+            statements.emplace_back(declaration<R>());
+        }
+
+        consume(Token::RIGHT_BRACE, "Expect '}' after block.");
+        return statements;
     }
     // declaration    → varDecl | statement 
     template<typename R>
@@ -54,6 +59,18 @@ private:
             return nullptr;
         }
     }
+    // statement      → exprStmt | printStmt | block;
+    template<typename R>
+    Stmt<R>* statement() {
+        if(match({Token::PRINT}))
+            return printStatement<R>();
+        if(match({Token::LEFT_BRACE})) {
+            auto blockStatements = block<R>();
+            return new Block<R>(std::move(blockStatements));
+        }
+        return expressionStatement<R>();
+    }
+    
     //Print          → print expression;
     template<typename R>
     Stmt<R>* printStatement() {
@@ -68,7 +85,7 @@ private:
         consume(Token::SEMICOLON, "Expect ';' after value.");
         return new ExpressionStmt<R>(value);
     }
-    //varDeclaration     → "var" IDENTIFIER ( "=" expression )? ";" ;
+    //varDecl     → "var" IDENTIFIER ( "=" expression )? ";" ;
     template<typename R>
     Stmt<R>* varDeclaration() {
         Token name = consume(Token::IDENTIFIER, "Expect variable name.");

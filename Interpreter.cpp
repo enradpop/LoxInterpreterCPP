@@ -83,12 +83,12 @@ ReturnType Interpreter::visitUnaryExpr(Unary<ReturnType>& expr) {
 }
 
 ReturnType Interpreter::visitVariableExpr(Variable<ReturnType>& expr) {
-    return _environment.get(expr.name);
+    return _environment->get(expr.name);
 }
 
 ReturnType Interpreter::visitAssignExpr(Assign<ReturnType>& expr) {
     ReturnType value = evaluate(*expr.value);
-    _environment.assign(expr.name, value);
+    _environment->assign(expr.name, value);
     return value;
 }
 
@@ -106,7 +106,12 @@ void Interpreter::visitVarStmt(Var<ReturnType>& var) {
     if(var.initializer != nullptr) {
         value = evaluate(*var.initializer);
     }
-    _environment.define(var.name._lexeme, value);
+    _environment->define(var.name._lexeme, value);
+}
+
+void Interpreter::visitBlockStmt(Block<ReturnType>& block) {
+    auto newEnvironment = std::make_shared<Environment<ReturnType>>(_environment);
+    executeBlock(block.statements, newEnvironment);
 }
 
 void Interpreter::checkNumberOperand(Token oprtr, ReturnType& operand) {
@@ -134,6 +139,22 @@ void Interpreter::interpret(std::vector<Stmt<ReturnType>*> const& statements) {
 
 void Interpreter::execute(Stmt<ReturnType>& stmt) {
     stmt.accept(*this);
+}
+
+void Interpreter::executeBlock(std::vector<std::unique_ptr<Stmt<ReturnType>>>& statements, std::shared_ptr<Environment<ReturnType>>& environment) {
+    std::shared_ptr<Environment<ReturnType>> previous = _environment;
+    try {
+        _environment = environment;
+        for(auto& s : statements) {
+            execute(*s);
+        }
+    }
+    catch(RuntimeError& re)
+    {
+        _environment = previous;
+        throw re;
+    }
+    _environment = previous;
 }
 
 bool Interpreter::isTruthy(ReturnType const& object){

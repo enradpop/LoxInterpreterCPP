@@ -8,6 +8,7 @@
 
 class Interpreter : public Visitor<ReturnType>, StmtVisitor<ReturnType> {
 public:
+    Interpreter() : _environment(std::make_shared<Environment<ReturnType>>()) {}
     ReturnType visitBinaryExpr(Binary<ReturnType>& expr) override;
     ReturnType visitGroupingExpr(Grouping<ReturnType>& expr) override;
     ReturnType visitLiteralExpr(Literal<ReturnType>& expr) override;
@@ -20,11 +21,13 @@ public:
     void visitExpressionStmt(ExpressionStmt<ReturnType>& expression) override;
     void visitPrintStmt(Print<ReturnType>& print) override;
     void visitVarStmt(Var<ReturnType>& var) override;
+    void visitBlockStmt(Block<ReturnType>& block) override;
 private:
     ReturnType evaluate(Expr<ReturnType>& expr);
     void execute(Stmt<ReturnType>& stmt);
+    void executeBlock(std::vector<std::unique_ptr<Stmt<ReturnType>>>& statements, std::shared_ptr<Environment<ReturnType>>& environment);
     bool isTruthy(ReturnType const& object);
     bool isEqual(ReturnType const& left, ReturnType const& right);
     std::string stringify(ReturnType const& object);
-    Environment<ReturnType> _environment;
+    std::shared_ptr<Environment<ReturnType>> _environment;
 };

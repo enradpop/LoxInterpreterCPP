@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <vector>
 #include "Token.h"
 #include "Logger.h"
 // forward declarations
@@ -54,9 +55,20 @@ public:
     std::unique_ptr<Expr<R>> initializer;
 };
 
+template<typename R> class Block : public Stmt<R> {
+public:
+    Block(std::vector<std::unique_ptr<Stmt<R>>>& statements) : statements(statements) {}
+    Block(std::vector<std::unique_ptr<Stmt<R>>>&& statements) : statements(std::move(statements)) {}
+    void accept(StmtVisitor<R>& visitor) override {
+        visitor.visitBlockStmt(*this);
+    }
+    std::vector<std::unique_ptr<Stmt<R>>> statements;
+};
+
 template <typename R> class StmtVisitor {
 public:
     virtual void visitExpressionStmt(ExpressionStmt<R>& stmt) = 0;
     virtual void visitPrintStmt(Print<R>& stmt) = 0;
     virtual void visitVarStmt(Var<R>& stmt) = 0;
+    virtual void visitBlockStmt(Block<R>& stmt) = 0;
 };
