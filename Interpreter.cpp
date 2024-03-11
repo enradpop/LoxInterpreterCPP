@@ -114,6 +114,15 @@ void Interpreter::visitBlockStmt(Block<ReturnType>& block) {
     executeBlock(block.statements, newEnvironment);
 }
 
+void Interpreter::visitIfStmt(If<ReturnType>& ifStmt) {
+    if (isTruthy(evaluate(*ifStmt.condition))) {
+      execute(*ifStmt.thenBranch);
+    } else if (ifStmt.elseBranch != nullptr) {
+      execute(*ifStmt.elseBranch);
+    }
+    return;
+}
+
 void Interpreter::checkNumberOperand(Token oprtr, ReturnType& operand) {
     if(std::holds_alternative<double>(operand)) return;
     throw RuntimeError(oprtr, "Operand must be a number");

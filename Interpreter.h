@@ -22,6 +22,7 @@ public:
     void visitPrintStmt(Print<ReturnType>& print) override;
     void visitVarStmt(Var<ReturnType>& var) override;
     void visitBlockStmt(Block<ReturnType>& block) override;
+    void visitIfStmt(If<ReturnType>& ifStmt) override;
 private:
     ReturnType evaluate(Expr<ReturnType>& expr);
     void execute(Stmt<ReturnType>& stmt);

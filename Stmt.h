@@ -65,10 +65,25 @@ public:
     std::vector<std::unique_ptr<Stmt<R>>> statements;
 };
 
+template<typename R> class If : public Stmt<R> {
+public:
+    If(Expr<R>* condition, Stmt<R>* thenBranch, Stmt<R>* elseBranch)
+    : condition(condition), thenBranch(thenBranch), elseBranch(elseBranch)
+    {}
+
+    void accept(StmtVisitor<R>& visitor) override {
+        visitor.visitIfStmt(*this);
+    }
+    std::unique_ptr<Expr<R>> condition;
+    std::unique_ptr<Stmt<R>> thenBranch, elseBranch;
+
+};
+
 template <typename R> class StmtVisitor {
 public:
     virtual void visitExpressionStmt(ExpressionStmt<R>& stmt) = 0;
     virtual void visitPrintStmt(Print<R>& stmt) = 0;
     virtual void visitVarStmt(Var<R>& stmt) = 0;
     virtual void visitBlockStmt(Block<R>& stmt) = 0;
+    virtual void visitIfStmt(If<R>& stmt) = 0;
 };

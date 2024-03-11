@@ -59,9 +59,11 @@ private:
             return nullptr;
         }
     }
-    // statement      → exprStmt | printStmt | block;
+    // statement      → exprStmt | ifStmt | printStmt | block;
     template<typename R>
     Stmt<R>* statement() {
+        if(match({Token::IF}))
+            return ifStatement<R>();
         if(match({Token::PRINT}))
             return printStatement<R>();
         if(match({Token::LEFT_BRACE})) {
@@ -70,7 +72,22 @@ private:
         }
         return expressionStatement<R>();
     }
-    
+
+    // ifStmt         → "if" "(" expression ")" statement
+    //                        ( "else" statement )? ;
+    template<typename R>
+    Stmt<R>* ifStatement() {
+        consume(Token::LEFT_PAREN, "Expect '(' after 'if'.");
+        Expr<R>* condition = expression<R>();
+        consume(Token::RIGHT_PAREN, "Expect ')' after if condition.");
+        Stmt<R>* thenBranch = statement<R>();
+        Stmt<R>* elseBranch = nullptr;
+        if (match({Token::ELSE})) {
+            elseBranch = statement<R>();
+        }
+        return new If<R>(condition, thenBranch, elseBranch);
+    }
+
     //Print          → print expression;
     template<typename R>
     Stmt<R>* printStatement() {
@@ -78,6 +95,7 @@ private:
         consume(Token::SEMICOLON, "Expect ';' after value.");
         return new Print<R>(value);
     }
+
     //ExpressionStmt     → expression;
     template<typename R>
     Stmt<R>* expressionStatement() {
