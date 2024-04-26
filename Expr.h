@@ -61,6 +61,21 @@ public:
     Token value;
 };
 
+template <typename R> class Logical: public Expr<R> {
+public:
+    Logical(Expr<R>* left, Expr<R>* right, Token const& oprtr): left(left), right(right), oprtr(oprtr)
+    {LOG("new Logical");}
+    
+    ~Logical() override {LOG("delete Logical");}
+
+    R accept(Visitor<R>& visitor) override {
+        return visitor.visitLogicalExpr(*this);
+    }
+
+    std::unique_ptr<Expr<R>> left, right;
+    Token oprtr;
+};
+
 template <typename R> class Unary: public Expr<R> {
 public:
     Unary(Token const& oprtr, Expr<R>* right): oprtr(oprtr), right(right)
@@ -103,6 +118,7 @@ template <typename R> class Visitor {
 public:
     virtual R visitBinaryExpr(Binary<R>& expr) = 0;
     virtual R visitGroupingExpr(Grouping<R>& expr) = 0;
+    virtual R visitLogicalExpr(Logical<R>& expr) = 0;
     virtual R visitLiteralExpr(Literal<R>& expr) = 0;
     virtual R visitUnaryExpr(Unary<R>& expr) = 0;
     virtual R visitVariableExpr(Variable<R>& expr) = 0;

@@ -12,6 +12,7 @@ public:
     ReturnType visitBinaryExpr(Binary<ReturnType>& expr) override;
     ReturnType visitGroupingExpr(Grouping<ReturnType>& expr) override;
     ReturnType visitLiteralExpr(Literal<ReturnType>& expr) override;
+    ReturnType visitLogicalExpr(Logical<ReturnType>& expr) override;
     ReturnType visitUnaryExpr(Unary<ReturnType>& expr) override;
     ReturnType visitVariableExpr(Variable<ReturnType>& expr) override;
     ReturnType visitAssignExpr(Assign<ReturnType>& expr) override;

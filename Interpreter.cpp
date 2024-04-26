@@ -62,9 +62,22 @@ ReturnType Interpreter::visitLiteralExpr(Literal<ReturnType>& expr) {
     if(std::holds_alternative<bool>(*expr.value._literal)) {
         return std::get<bool>(*expr.value._literal);
     }
-    else {
+    else if(std::holds_alternative<std::string>(*expr.value._literal)) {
         return std::get<std::string>(*expr.value._literal);
     }
+    else return nullptr;
+}
+
+ReturnType Interpreter::visitLogicalExpr(Logical<ReturnType>& expr) {
+    ReturnType left = evaluate(*expr.left);
+
+    if (expr.oprtr._type == Token::OR) {
+      if (isTruthy(left)) return left;
+    } else {
+      if (!isTruthy(left)) return left;
+    }
+
+    return evaluate(*expr.right);
 }
 
 ReturnType Interpreter::visitUnaryExpr(Unary<ReturnType>& expr) {
@@ -170,8 +183,10 @@ bool Interpreter::isTruthy(ReturnType const& object){
     if(std::holds_alternative<bool>(object)) {
         return std::get<bool>(object);
     }
+    else if (std::holds_alternative<std::nullptr_t>(object)) {
+        return false;
+    }
     else return true;
-    //TODO nil?
 }
 
 bool Interpreter::isEqual(ReturnType const& left, ReturnType const& right) {

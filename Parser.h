@@ -119,10 +119,10 @@ private:
     Expr<R>* expression() {
         return assignment<R>();
     }
-    //assignment     → IDENTIFIER "=" assignment | equality ;
+    //assignment     → IDENTIFIER "=" assignment | logic_or
     template<typename R>
     Expr<R>* assignment() {
-        Expr<R>* expr = equality<R>();
+        Expr<R>* expr = logic_or<R>();
         if(match({Token::EQUAL})) {
             Token equals = previous();
             Expr<R>* value  = assignment<R>();
@@ -131,6 +131,28 @@ private:
                 return new Assign<R>(name, value);
             }
             error(equals, "Invalid assignment target.");
+        }
+        return expr;
+    }
+    //logic_or       → logic_and ( "or" logic_and )*
+    template<typename R>
+    Expr<R>* logic_or() {
+        Expr<R>* expr = logic_and<R>();
+        while(match({Token::OR})) {
+            Token oprtr = previous();
+            Expr<R>* right = logic_and<R>();
+            expr = new Logical<R>(expr, right, oprtr);
+        }
+        return expr;
+    }
+    //logic_and      → equality ( "and" equality )*
+    template<typename R>
+    Expr<R>* logic_and() {
+        Expr<R>* expr = equality<R>();
+        while(match({Token::AND})) {
+            Token oprtr = previous();
+            Expr<R>* right = equality<R>();
+            expr = new Logical<R>(expr, right, oprtr);
         }
         return expr;
     }
@@ -195,7 +217,7 @@ private:
     Expr<R>* primary() {
         if(match({Token::FALSE})) return new Literal<R>({Token::FALSE, "false", false, 1}); //TODO: line number?
         if(match({Token::TRUE})) return new Literal<R>({Token::TRUE, "true", true, 1});
-        if(match({Token::NIL})) return new Literal<R>({Token::NIL, "nil", std::nullopt, 1});
+        if(match({Token::NIL})) return new Literal<R>({Token::NIL, "nil", nullptr, 1});
         if(match({Token::NUMBER})) return new Literal<R>({Token::NUMBER, previous()._lexeme, previous()._literal, 1});
         if(match({Token::STRING})) return new Literal<R>({Token::STRING, previous()._lexeme, previous()._literal, 1});
         if(match({Token::IDENTIFIER})) return new Variable<R>(previous());
