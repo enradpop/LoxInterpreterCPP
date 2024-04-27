@@ -154,7 +154,7 @@ void Interpreter::checkNumberOperands(Token oprtr, ReturnType& left, ReturnType&
 }
 
 
-void Interpreter::interpret(std::vector<Stmt<ReturnType>*> const& statements) {
+void Interpreter::interpret(std::vector<std::unique_ptr<Stmt<ReturnType>>> const& statements) {
     try {
         for(auto& s : statements) {
             execute(*s);

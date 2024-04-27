@@ -18,7 +18,7 @@ public:
     ReturnType visitAssignExpr(Assign<ReturnType>& expr) override;
     void checkNumberOperand(Token oprtr, ReturnType& operand);
     void checkNumberOperands(Token oprtr, ReturnType& left, ReturnType& right);
-    void interpret(std::vector<Stmt<ReturnType>*> const& statements);
+    void interpret(std::vector<std::unique_ptr<Stmt<ReturnType>>> const& statements);
     void visitExpressionStmt(ExpressionStmt<ReturnType>& expression) override;
     void visitPrintStmt(Print<ReturnType>& print) override;
     void visitVarStmt(Var<ReturnType>& var) override;

@@ -22,9 +22,9 @@ public:
     {}
 
     template<typename R>
-    std::vector<Stmt<R>*> parse() {
+    std::vector<std::unique_ptr<Stmt<R>>> parse() {
         try {
-            std::vector<Stmt<R>*> statements;
+            std::vector<std::unique_ptr<Stmt<R>>> statements;
             while(!isAtEnd()) {
                 statements.emplace_back(declaration<R>());
             }
@@ -59,9 +59,11 @@ private:
             return nullptr;
         }
     }
-    // statement      → exprStmt | ifStmt | printStmt | whileStmt | block;
+    // statement      → exprStmt | forStmt | ifStmt | printStmt | whileStmt | block;
     template<typename R>
     Stmt<R>* statement() {
+        if(match({Token::FOR}))
+            return forStatement<R>();
         if(match({Token::IF}))
             return ifStatement<R>();
         if(match({Token::PRINT}))
@@ -73,6 +75,52 @@ private:
             return new Block<R>(std::move(blockStatements));
         }
         return expressionStatement<R>();
+    }
+    // forStmt        → "for" "(" ( varDecl | exprStmt | ";" ) expression? ";"expression? ")" statement ;
+    template<typename R>
+    Stmt<R>* forStatement() {
+        consume(Token::LEFT_PAREN, "Expect '(' after 'for'.");
+        Stmt<R>* initializer = nullptr;
+        if(match({Token::SEMICOLON})) {
+            ;
+        }
+        if(match({Token::VAR})) {
+            initializer = varDeclaration<R>();
+        }
+        else {
+            initializer = expressionStatement<R>();
+        }
+        Expr<R>* condition = nullptr;
+        if (!check(Token::SEMICOLON)) {
+            condition = expression<R>();
+        }
+        consume(Token::SEMICOLON, "Expect ';' after loop condition.");
+        Expr<R>* increment = nullptr;
+        if (!check(Token::RIGHT_PAREN)) {
+            increment = expression<R>();
+        }
+        consume(Token::RIGHT_PAREN, "Expect ')' after for clauses.");
+        Stmt<R>* body = statement<R>();
+         if (increment != nullptr) {
+            //body = new Stmt.Block(Arrays.asList(body, new Stmt.Expression(increment)));
+            std::vector<std::unique_ptr<Stmt<R>>> bodyAndIncrement;
+            bodyAndIncrement.emplace_back(body);
+            bodyAndIncrement.emplace_back(new ExpressionStmt<R>(increment));
+            body = new Block<R>(std::move(bodyAndIncrement));
+        }
+
+        if (condition == nullptr) condition =  new Literal<R>({Token::TRUE, "true", true, 1});
+        body = new While<R>(condition, body);
+
+        if (initializer != nullptr) {
+            //body = new Stmt.Block(Arrays.asList(initializer, body));
+            std::vector<std::unique_ptr<Stmt<R>>> withInitializer;
+            withInitializer.emplace_back(initializer);
+            withInitializer.emplace_back(body);
+            body = new Block<R>(std::move(withInitializer));
+        }
+
+        return body;
     }
 
     // ifStmt         → "if" "(" expression ")" statement
@@ -138,6 +186,7 @@ private:
             Expr<R>* value  = assignment<R>();
             if(expr->isLValue()) {
                 Token name = static_cast<Variable<R>*>(expr)->name;
+                delete expr;
                 return new Assign<R>(name, value);
             }
             error(equals, "Invalid assignment target.");

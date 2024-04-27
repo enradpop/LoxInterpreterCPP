@@ -93,7 +93,9 @@ public:
 
 template <typename R> class Variable : public Expr<R> {
 public:
-    Variable(Token const& name) : name(name) {}
+    Variable(Token const& name) : name(name)
+    {LOG("new Variable");}
+    ~Variable() override {LOG("delete Variable")}
     
     R accept(Visitor<R>& visitor) override {
         return visitor.visitVariableExpr(*this);
@@ -106,7 +108,9 @@ public:
 
 template <typename R> class Assign : public Expr<R> {
 public:
-    Assign(Token const& name, Expr<R>* value) : name(name), value(value) {}
+    Assign(Token const& name, Expr<R>* value) : name(name), value(value)
+    {LOG("new Assign");}
+    ~Assign() override {LOG("delete Assign")}
     R accept(Visitor<R>& visitor) override {
         return visitor.visitAssignExpr(*this);
     }
