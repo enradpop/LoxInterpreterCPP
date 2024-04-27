@@ -22,6 +22,7 @@ public:
     void visitExpressionStmt(ExpressionStmt<ReturnType>& expression) override;
     void visitPrintStmt(Print<ReturnType>& print) override;
     void visitVarStmt(Var<ReturnType>& var) override;
+    void visitWhileStmt(While<ReturnType>& stmt) override;
     void visitBlockStmt(Block<ReturnType>& block) override;
     void visitIfStmt(If<ReturnType>& ifStmt) override;
 private:

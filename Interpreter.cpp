@@ -122,6 +122,12 @@ void Interpreter::visitVarStmt(Var<ReturnType>& var) {
     _environment->define(var.name._lexeme, value);
 }
 
+void Interpreter::visitWhileStmt(While<ReturnType>& stmt) {
+    while(isTruthy(evaluate(*stmt.condition))) {
+        execute(*stmt.body);
+    }
+}
+
 void Interpreter::visitBlockStmt(Block<ReturnType>& block) {
     auto newEnvironment = std::make_shared<Environment<ReturnType>>(_environment);
     executeBlock(block.statements, newEnvironment);

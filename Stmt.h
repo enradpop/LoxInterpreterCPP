@@ -76,7 +76,19 @@ public:
     }
     std::unique_ptr<Expr<R>> condition;
     std::unique_ptr<Stmt<R>> thenBranch, elseBranch;
+};
 
+template<typename R> class While :  public Stmt<R> {
+public:
+    While(Expr<R>* condition, Stmt<R>* body)
+    : condition(condition), body(body)
+    {}
+
+    void accept(StmtVisitor<R>& visitor) override {
+        visitor.visitWhileStmt(*this);
+    }
+    std::unique_ptr<Expr<R>> condition;
+    std::unique_ptr<Stmt<R>> body;
 };
 
 template <typename R> class StmtVisitor {
@@ -84,6 +96,7 @@ public:
     virtual void visitExpressionStmt(ExpressionStmt<R>& stmt) = 0;
     virtual void visitPrintStmt(Print<R>& stmt) = 0;
     virtual void visitVarStmt(Var<R>& stmt) = 0;
+    virtual void visitWhileStmt(While<R>& stmt) = 0;
     virtual void visitBlockStmt(Block<R>& stmt) = 0;
     virtual void visitIfStmt(If<R>& stmt) = 0;
 };

@@ -59,13 +59,15 @@ private:
             return nullptr;
         }
     }
-    // statement      → exprStmt | ifStmt | printStmt | block;
+    // statement      → exprStmt | ifStmt | printStmt | whileStmt | block;
     template<typename R>
     Stmt<R>* statement() {
         if(match({Token::IF}))
             return ifStatement<R>();
         if(match({Token::PRINT}))
             return printStatement<R>();
+        if(match({Token::WHILE}))
+            return whileStatement<R>();
         if(match({Token::LEFT_BRACE})) {
             auto blockStatements = block<R>();
             return new Block<R>(std::move(blockStatements));
@@ -95,7 +97,15 @@ private:
         consume(Token::SEMICOLON, "Expect ';' after value.");
         return new Print<R>(value);
     }
-
+    //whileStmt      → "while" "(" expression ")" statement
+    template<typename R>
+    Stmt<R>* whileStatement() {
+        consume(Token::LEFT_PAREN, "Expect '(' after 'while'.");
+        Expr<R>* condition = expression<R>();
+        consume(Token::RIGHT_PAREN, "Expect ')' after condition.");
+        Stmt<R>* body = statement<R>();
+        return new While<R>(condition, body);
+    }
     //ExpressionStmt     → expression;
     template<typename R>
     Stmt<R>* expressionStatement() {
