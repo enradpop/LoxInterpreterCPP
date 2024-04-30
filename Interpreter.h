@@ -16,6 +16,7 @@ public:
     ReturnType visitUnaryExpr(Unary<ReturnType>& expr) override;
     ReturnType visitVariableExpr(Variable<ReturnType>& expr) override;
     ReturnType visitAssignExpr(Assign<ReturnType>& expr) override;
+    ReturnType visitCallExpr(Call<ReturnType>& expr) override;
     void checkNumberOperand(Token oprtr, ReturnType& operand);
     void checkNumberOperands(Token oprtr, ReturnType& left, ReturnType& right);
     void interpret(std::vector<std::unique_ptr<Stmt<ReturnType>>> const& statements);

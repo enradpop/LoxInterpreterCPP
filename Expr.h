@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <vector>
 #include "Token.h"
 #include "Logger.h"
 // forward declarations
@@ -31,6 +32,23 @@ public:
     std::unique_ptr<Expr<R>> left;
     Token oprtr;
     std::unique_ptr<Expr<R>> right;
+};
+
+template <typename R> class Call: public Expr<R> {
+public:
+    Call(Expr<R>* callee, Token const& paren, std::vector<std::unique_ptr<Expr<R>>>& arguments): callee(callee), paren(paren), arguments(std::move(arguments)) {
+        LOG("new Call");
+    }
+
+    ~Call() override {LOG("delete Call")}
+
+    R accept(Visitor<R>& visitor) override {
+        return visitor.visitCallExpr(*this);
+    }
+
+    std::unique_ptr<Expr<R>> callee;
+    Token paren;
+    std::vector<std::unique_ptr<Expr<R>>> arguments;
 };
 
 template <typename R> class Grouping: public Expr<R> {
@@ -121,6 +139,7 @@ public:
 template <typename R> class Visitor {
 public:
     virtual R visitBinaryExpr(Binary<R>& expr) = 0;
+    virtual R visitCallExpr(Call<R>& expr) = 0;
     virtual R visitGroupingExpr(Grouping<R>& expr) = 0;
     virtual R visitLogicalExpr(Logical<R>& expr) = 0;
     virtual R visitLiteralExpr(Literal<R>& expr) = 0;

@@ -259,8 +259,7 @@ private:
         }
         return expr;
     }
-    // unary          → ( "!" | "-" ) unary
-    //                | primary ;
+    // unary          → ( "!" | "-" ) unary | call
     template<typename R>
     Expr<R>* unary() {
         if(match({Token::BANG, Token::MINUS})) {
@@ -268,7 +267,38 @@ private:
             Expr<R>* right = unary<R>();
             return new Unary<R>(oprtr, right);
         }
-        return primary<R>();
+        return call<R>();
+    }
+    // helper function to build call
+    // arguments      → expression ( "," expression )*
+    template<typename R>
+    Expr<R>* finishCall(Expr<R>* callee) {
+        std::vector<std::unique_ptr<Expr<R>>> arguments;
+        if (!check(Token::RIGHT_PAREN)) {
+            do {
+                arguments.emplace_back(expression<R>());
+            } while (match({Token::COMMA}));
+        }
+
+        Token paren = consume(Token::RIGHT_PAREN, "Expect ')' after arguments.");
+
+        return new Call<R>(callee, paren, arguments);
+    }
+    // call           → primary ( "(" arguments? ")" )*
+    template<typename R>
+    Expr<R>* call() {
+        Expr<R>* expr = primary<R>();
+
+        while (true) { 
+            if (match({Token::LEFT_PAREN})) {
+                expr = finishCall<R>(expr);
+            } 
+            else {
+                break;
+            }
+        }
+
+        return expr;
     }
     // primary        → NUMBER | STRING | "true" | "false" | "nil"
     //                | "(" expression ")" | IDENTIFIER ;

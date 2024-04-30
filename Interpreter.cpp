@@ -105,6 +105,11 @@ ReturnType Interpreter::visitAssignExpr(Assign<ReturnType>& expr) {
     return value;
 }
 
+ReturnType Interpreter::visitCallExpr(Call<ReturnType>& expr) {
+    //TODO Implement
+    return 0.0;
+}
+
 void Interpreter::visitExpressionStmt(ExpressionStmt<ReturnType>& exprStmt) {
     evaluate(*exprStmt.expression);
 }
