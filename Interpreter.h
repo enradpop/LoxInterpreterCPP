@@ -10,7 +10,7 @@
 class Clock : public LoxCallable {
 public:
     int arity() override;
-    ReturnType call(Interpreter const& interpreter, std::vector<ReturnType>& arguments) override;
+    ReturnType call(Interpreter& interpreter, std::vector<ReturnType>& arguments) override;
     std::string toString() override;
 };
 
@@ -32,19 +32,21 @@ public:
     void checkNumberOperands(Token oprtr, ReturnType& left, ReturnType& right);
     void interpret(std::vector<std::unique_ptr<Stmt<ReturnType>>> const& statements);
     void visitExpressionStmt(ExpressionStmt<ReturnType>& expression) override;
+    void visitFunctionStmt(Function<ReturnType>& stmt) override;
     void visitPrintStmt(Print<ReturnType>& print) override;
     void visitVarStmt(Var<ReturnType>& var) override;
     void visitWhileStmt(While<ReturnType>& stmt) override;
     void visitBlockStmt(Block<ReturnType>& block) override;
     void visitIfStmt(If<ReturnType>& ifStmt) override;
+    std::shared_ptr<Environment<ReturnType>> _environment;
+    std::shared_ptr<Environment<ReturnType>> _globals;
+    void executeBlock(std::vector<std::unique_ptr<Stmt<ReturnType>>>& statements, std::shared_ptr<Environment<ReturnType>>& environment);
 private:
     ReturnType evaluate(Expr<ReturnType>& expr);
     void execute(Stmt<ReturnType>& stmt);
-    void executeBlock(std::vector<std::unique_ptr<Stmt<ReturnType>>>& statements, std::shared_ptr<Environment<ReturnType>>& environment);
     bool isTruthy(ReturnType const& object);
     bool isEqual(ReturnType const& left, ReturnType const& right);
     std::string stringify(ReturnType const& object);
-    std::shared_ptr<Environment<ReturnType>> _environment;
-    std::shared_ptr<Environment<ReturnType>> _globals;
+    
     Clock _clock;
 };

@@ -1,5 +1,6 @@
 #include "Interpreter.h"
 #include "Lox.h"
+#include "LoxFunction.h"
 #include <chrono>
 
 #include <vector>
@@ -127,6 +128,13 @@ void Interpreter::visitExpressionStmt(ExpressionStmt<ReturnType>& exprStmt) {
     evaluate(*exprStmt.expression);
 }
 
+void Interpreter::visitFunctionStmt(Function<ReturnType>& stmt) {
+    //TODO how to manage function objects? i have no gc like the source material
+    LoxFunction* function = new LoxFunction(stmt);
+    ReturnType func(function);
+    _environment->define(stmt.name._lexeme, func);
+}
+
 void Interpreter::visitPrintStmt(Print<ReturnType>& printStmt) {
     ReturnType value = evaluate(*printStmt.expression);
     std::cout << stringify(value) <<std::endl;
@@ -243,7 +251,7 @@ int Clock::arity() {
     return 0;
 }
 
-ReturnType Clock::call(Interpreter const& interpreter, std::vector<ReturnType>& /*arguments*/)
+ReturnType Clock::call(Interpreter& interpreter, std::vector<ReturnType>& /*arguments*/)
 {
     auto now = std::chrono::system_clock::now();
     auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();

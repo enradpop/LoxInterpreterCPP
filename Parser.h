@@ -47,10 +47,11 @@ private:
         consume(Token::RIGHT_BRACE, "Expect '}' after block.");
         return statements;
     }
-    // declaration    → varDecl | statement 
+    // declaration    → funDecl | varDecl | statement 
     template<typename R>
     Stmt<R>* declaration() {
         try {
+            if(match({Token::FUN})) return function<R>("function");
             if(match({Token::VAR})) return varDeclaration<R>();
             return statement<R>();
         }
@@ -161,6 +162,27 @@ private:
         consume(Token::SEMICOLON, "Expect ';' after value.");
         return new ExpressionStmt<R>(value);
     }
+    // funDecl        → "fun" function
+    // function       → IDENTIFIER "(" parameters? ")" block
+    // parameters     → IDENTIFIER ( "," IDENTIFIER )*
+    template<typename R>
+    Stmt<R>* function(std::string const& kind) {
+        Token name = consume(Token::IDENTIFIER, "Expect " + kind + " name.");
+        consume(Token::LEFT_PAREN, "Expect '(' after " + kind + " name.");
+        std::vector<Token> parameters;
+        if (!check(Token::RIGHT_PAREN)) {
+            do {
+                if (parameters.size() >= 255) {
+                    error(peek(), "Can't have more than 255 parameters.");
+                }
+                parameters.emplace_back(consume(Token::IDENTIFIER, "Expect parameter name."));
+            } while (match({Token::COMMA}));
+        }
+        consume(Token::RIGHT_PAREN, "Expect ')' after parameters.");
+        consume(Token::LEFT_BRACE, "Expect '{' before " + kind + " body.");
+        auto body = block<R>();
+        return new Function<R>(name, parameters, body);
+    }
     //varDecl     → "var" IDENTIFIER ( "=" expression )? ";" ;
     template<typename R>
     Stmt<R>* varDeclaration() {
@@ -222,7 +244,7 @@ private:
         while(match({Token::BANG_EQUAL, Token::EQUAL_EQUAL})) {
             Token oprtr = previous();
             Expr<R>* right = comparison<R>();
-            expr = new Binary<R>(expr, oprtr, right);//TODO mem mgmt
+            expr = new Binary<R>(expr, oprtr, right);
         }
         return expr;
     }

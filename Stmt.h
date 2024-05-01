@@ -29,6 +29,21 @@ public:
     std::unique_ptr<Expr<R>> expression;
 };
 
+template <typename R> class Function: public Stmt<R> {
+public:
+    Function(Token const& name, std::vector<Token>& params, std::vector<std::unique_ptr<Stmt<R>>>& body):
+    name(name), params(params), body(std::move(body))
+    {LOG("new Function");}
+    ~Function() override {LOG("delete Function")}
+    void accept(StmtVisitor<R>& visitor) override {
+        return visitor.visitFunctionStmt(*this);
+    }
+
+    Token name;
+    std::vector<Token> params;
+    std::vector<std::unique_ptr<Stmt<R>>> body;
+};
+
 template <typename R> class Print: public Stmt<R> {
 public:
     Print(Expr<R>* expression): expression(expression)
@@ -100,6 +115,7 @@ public:
 template <typename R> class StmtVisitor {
 public:
     virtual void visitExpressionStmt(ExpressionStmt<R>& stmt) = 0;
+    virtual void visitFunctionStmt(Function<R>& stmt) = 0;
     virtual void visitPrintStmt(Print<R>& stmt) = 0;
     virtual void visitVarStmt(Var<R>& stmt) = 0;
     virtual void visitWhileStmt(While<R>& stmt) = 0;
