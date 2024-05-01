@@ -276,6 +276,9 @@ private:
         std::vector<std::unique_ptr<Expr<R>>> arguments;
         if (!check(Token::RIGHT_PAREN)) {
             do {
+                if(arguments.size() >= 255) {
+                    error(peek(), "Can't have more than 255 arguments.");
+                }
                 arguments.emplace_back(expression<R>());
             } while (match({Token::COMMA}));
         }

@@ -1,5 +1,6 @@
 #include "Interpreter.h"
 #include "Lox.h"
+#include <chrono>
 
 #include <vector>
 
@@ -106,8 +107,20 @@ ReturnType Interpreter::visitAssignExpr(Assign<ReturnType>& expr) {
 }
 
 ReturnType Interpreter::visitCallExpr(Call<ReturnType>& expr) {
-    //TODO Implement
-    return 0.0;
+    ReturnType callee = evaluate(*expr.callee);
+    std::vector<ReturnType> arguments;
+    for(auto& argument : expr.arguments)
+    {
+        arguments.emplace_back(evaluate(*argument));
+    }
+    if(!std::holds_alternative<LoxCallable*>(callee)) {
+        throw RuntimeError(expr.paren, "Can only call functions and classes.");
+    }
+    LoxCallable* function =  std::get<LoxCallable*>(callee);
+    if (arguments.size() != function->arity()) {
+      throw RuntimeError(expr.paren, "Expected " + std::to_string(function->arity()) + " arguments but got " + std::to_string(arguments.size()) + ".");
+    }
+    return function->call(*this, arguments);
 }
 
 void Interpreter::visitExpressionStmt(ExpressionStmt<ReturnType>& exprStmt) {
@@ -224,4 +237,19 @@ std::string Interpreter::stringify(ReturnType const& object) {
     }
     else return "null";
 
+}
+
+int Clock::arity() {
+    return 0;
+}
+
+ReturnType Clock::call(Interpreter const& interpreter, std::vector<ReturnType>& /*arguments*/)
+{
+    auto now = std::chrono::system_clock::now();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+    return static_cast<double>(millis); 
+}
+
+std::string Clock::toString() {
+    return "Clock native fn";
 }

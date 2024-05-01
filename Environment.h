@@ -9,7 +9,7 @@ class Environment {
 public:
     Environment() = default;
     Environment(std::shared_ptr<Environment>& enclosing): _enclosing(enclosing) {}
-    void define(std::string& name, R& value) {
+    void define(std::string const& name, R& value) {
         _values[name] = value;
     }
     R get(Token& name) {

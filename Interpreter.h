@@ -3,12 +3,23 @@
 #include "Stmt.h"
 #include "Environment.h"
 #include "Types.h"
+#include "LoxCallable.h"
 #include <memory>
 #include <vector>
 
+class Clock : public LoxCallable {
+public:
+    int arity() override;
+    ReturnType call(Interpreter const& interpreter, std::vector<ReturnType>& arguments) override;
+    std::string toString() override;
+};
+
 class Interpreter : public Visitor<ReturnType>, StmtVisitor<ReturnType> {
 public:
-    Interpreter() : _environment(std::make_shared<Environment<ReturnType>>()) {}
+    Interpreter() : _environment(std::make_shared<Environment<ReturnType>>()), _globals(_environment) {
+        ReturnType func(&_clock);
+        _globals->define("clock", func);
+    }
     ReturnType visitBinaryExpr(Binary<ReturnType>& expr) override;
     ReturnType visitGroupingExpr(Grouping<ReturnType>& expr) override;
     ReturnType visitLiteralExpr(Literal<ReturnType>& expr) override;
@@ -34,4 +45,6 @@ private:
     bool isEqual(ReturnType const& left, ReturnType const& right);
     std::string stringify(ReturnType const& object);
     std::shared_ptr<Environment<ReturnType>> _environment;
+    std::shared_ptr<Environment<ReturnType>> _globals;
+    Clock _clock;
 };
