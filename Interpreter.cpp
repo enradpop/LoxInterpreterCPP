@@ -114,10 +114,10 @@ ReturnType Interpreter::visitCallExpr(Call<ReturnType>& expr) {
     {
         arguments.emplace_back(evaluate(*argument));
     }
-    if(!std::holds_alternative<LoxCallable*>(callee)) {
+    if(!std::holds_alternative<FunctionObject>(callee)) {
         throw RuntimeError(expr.paren, "Can only call functions and classes.");
     }
-    LoxCallable* function =  std::get<LoxCallable*>(callee);
+    FunctionObject function =  std::get<FunctionObject>(callee);
     if (arguments.size() != function->arity()) {
       throw RuntimeError(expr.paren, "Expected " + std::to_string(function->arity()) + " arguments but got " + std::to_string(arguments.size()) + ".");
     }
@@ -129,8 +129,7 @@ void Interpreter::visitExpressionStmt(ExpressionStmt<ReturnType>& exprStmt) {
 }
 
 void Interpreter::visitFunctionStmt(Function<ReturnType>& stmt) {
-    //TODO how to manage function objects? i have no gc like the source material
-    LoxFunction* function = new LoxFunction(stmt);
+    FunctionObject function = std::make_shared<LoxFunction>(stmt);
     ReturnType func(function);
     _environment->define(stmt.name._lexeme, func);
 }

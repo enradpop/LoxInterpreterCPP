@@ -17,7 +17,7 @@ public:
 class Interpreter : public Visitor<ReturnType>, StmtVisitor<ReturnType> {
 public:
     Interpreter() : _environment(std::make_shared<Environment<ReturnType>>()), _globals(_environment) {
-        ReturnType func(&_clock);
+        ReturnType func(std::make_shared<Clock>());
         _globals->define("clock", func);
     }
     ReturnType visitBinaryExpr(Binary<ReturnType>& expr) override;
@@ -48,5 +48,5 @@ private:
     bool isEqual(ReturnType const& left, ReturnType const& right);
     std::string stringify(ReturnType const& object);
     
-    Clock _clock;
+    std::shared_ptr<Clock> _clock;
 };

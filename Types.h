@@ -10,5 +10,5 @@ public:
     {}
     Token _token;
 };
-
-using ReturnType = std::variant<double, std::string, bool, std::nullptr_t, LoxCallable*>;
+using FunctionObject = std::shared_ptr<LoxCallable>;
+using ReturnType = std::variant<double, std::string, bool, std::nullptr_t, FunctionObject>;
