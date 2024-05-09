@@ -47,8 +47,8 @@ void Lox::run(std::string const & source) {
     std::vector<Token> tokens = scanner.scanTokens();
     Parser parser(tokens);
     //TODO: mem mgmt?
-    // Expr<ReturnType>* expression = parser.parse<ReturnType>();
-    std::vector<std::unique_ptr<Stmt<ReturnType>>> statements = parser.parse<ReturnType>();
+    // Expr<ExpressionValue>* expression = parser.parse<ExpressionValue>();
+    std::vector<std::unique_ptr<Stmt<ExpressionValue>>> statements = parser.parse<ExpressionValue>();
 
     // Stop if there was a syntax error.
     if (_hadError) return;

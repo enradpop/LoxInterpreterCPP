@@ -60,7 +60,7 @@ private:
             return nullptr;
         }
     }
-    // statement      → exprStmt | forStmt | ifStmt | printStmt | whileStmt | block;
+    // statement      → exprStmt | forStmt | ifStmt | printStmt | returnStmt | whileStmt | block;
     template<typename R>
     Stmt<R>* statement() {
         if(match({Token::FOR}))
@@ -69,6 +69,8 @@ private:
             return ifStatement<R>();
         if(match({Token::PRINT}))
             return printStatement<R>();
+        if(match({Token::RETURN}))
+            return returnStatement<R>();
         if(match({Token::WHILE}))
             return whileStatement<R>();
         if(match({Token::LEFT_BRACE})) {
@@ -145,6 +147,17 @@ private:
         Expr<R>* value = expression<R>();
         consume(Token::SEMICOLON, "Expect ';' after value.");
         return new Print<R>(value);
+    }
+    //returnStmt     → "return" expression? ";"
+    template<typename R>
+    Stmt<R>* returnStatement() {
+        Token keyword = previous();
+        Expr<R>* value = nullptr;
+        if(!check(Token::SEMICOLON)) {
+            value = expression<R>();
+        }
+        consume(Token::SEMICOLON, "Expect ';' after return value.");
+        return new ReturnStmt<R>(keyword, value);
     }
     //whileStmt      → "while" "(" expression ")" statement
     template<typename R>

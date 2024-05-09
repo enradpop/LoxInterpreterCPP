@@ -5,16 +5,16 @@
 
 #include <vector>
 
-ReturnType Interpreter::visitGroupingExpr(Grouping<ReturnType>& expr) {
+ExpressionValue Interpreter::visitGroupingExpr(Grouping<ExpressionValue>& expr) {
     return evaluate(*expr.expression);
 }
-ReturnType Interpreter::evaluate(Expr<ReturnType>& expr) {
+ExpressionValue Interpreter::evaluate(Expr<ExpressionValue>& expr) {
     return expr.accept(*this);
 }
 
-ReturnType Interpreter::visitBinaryExpr(Binary<ReturnType>& expr) {
-    ReturnType left = evaluate(*expr.left);
-    ReturnType right = evaluate(*expr.right);
+ExpressionValue Interpreter::visitBinaryExpr(Binary<ExpressionValue>& expr) {
+    ExpressionValue left = evaluate(*expr.left);
+    ExpressionValue right = evaluate(*expr.right);
     switch (expr.oprtr._type)
     {
     case Token::MINUS:
@@ -40,13 +40,13 @@ ReturnType Interpreter::visitBinaryExpr(Binary<ReturnType>& expr) {
         return std::get<double>(left) > std::get<double>(right);
     case Token::GREATER_EQUAL:
         checkNumberOperands(expr.oprtr, left, right);
-        return std::get<double>(left) > std::get<double>(right);
+        return std::get<double>(left) >= std::get<double>(right);
     case Token::LESS:
         checkNumberOperands(expr.oprtr, left, right);
         return std::get<double>(left) < std::get<double>(right);
     case Token::LESS_EQUAL:
         checkNumberOperands(expr.oprtr, left, right);
-        return std::get<double>(left) < std::get<double>(right);
+        return std::get<double>(left) <= std::get<double>(right);
     case Token::BANG_EQUAL:
         return !isEqual(left, right);
     case Token::EQUAL_EQUAL:
@@ -57,7 +57,7 @@ ReturnType Interpreter::visitBinaryExpr(Binary<ReturnType>& expr) {
     }
     return nullptr;
 }
-ReturnType Interpreter::visitLiteralExpr(Literal<ReturnType>& expr) {
+ExpressionValue Interpreter::visitLiteralExpr(Literal<ExpressionValue>& expr) {
     if(std::holds_alternative<double>(*expr.value._literal)) {
         return std::get<double>(*expr.value._literal);
     }
@@ -70,8 +70,8 @@ ReturnType Interpreter::visitLiteralExpr(Literal<ReturnType>& expr) {
     else return nullptr;
 }
 
-ReturnType Interpreter::visitLogicalExpr(Logical<ReturnType>& expr) {
-    ReturnType left = evaluate(*expr.left);
+ExpressionValue Interpreter::visitLogicalExpr(Logical<ExpressionValue>& expr) {
+    ExpressionValue left = evaluate(*expr.left);
 
     if (expr.oprtr._type == Token::OR) {
       if (isTruthy(left)) return left;
@@ -82,8 +82,8 @@ ReturnType Interpreter::visitLogicalExpr(Logical<ReturnType>& expr) {
     return evaluate(*expr.right);
 }
 
-ReturnType Interpreter::visitUnaryExpr(Unary<ReturnType>& expr) {
-    ReturnType right =  evaluate(*expr.right);
+ExpressionValue Interpreter::visitUnaryExpr(Unary<ExpressionValue>& expr) {
+    ExpressionValue right =  evaluate(*expr.right);
     switch(expr.oprtr._type) {
         case Token::MINUS:
             checkNumberOperand(expr.oprtr, right);
@@ -97,19 +97,19 @@ ReturnType Interpreter::visitUnaryExpr(Unary<ReturnType>& expr) {
     return nullptr;
 }
 
-ReturnType Interpreter::visitVariableExpr(Variable<ReturnType>& expr) {
+ExpressionValue Interpreter::visitVariableExpr(Variable<ExpressionValue>& expr) {
     return _environment->get(expr.name);
 }
 
-ReturnType Interpreter::visitAssignExpr(Assign<ReturnType>& expr) {
-    ReturnType value = evaluate(*expr.value);
+ExpressionValue Interpreter::visitAssignExpr(Assign<ExpressionValue>& expr) {
+    ExpressionValue value = evaluate(*expr.value);
     _environment->assign(expr.name, value);
     return value;
 }
 
-ReturnType Interpreter::visitCallExpr(Call<ReturnType>& expr) {
-    ReturnType callee = evaluate(*expr.callee);
-    std::vector<ReturnType> arguments;
+ExpressionValue Interpreter::visitCallExpr(Call<ExpressionValue>& expr) {
+    ExpressionValue callee = evaluate(*expr.callee);
+    std::vector<ExpressionValue> arguments;
     for(auto& argument : expr.arguments)
     {
         arguments.emplace_back(evaluate(*argument));
@@ -124,41 +124,49 @@ ReturnType Interpreter::visitCallExpr(Call<ReturnType>& expr) {
     return function->call(*this, arguments);
 }
 
-void Interpreter::visitExpressionStmt(ExpressionStmt<ReturnType>& exprStmt) {
+void Interpreter::visitExpressionStmt(ExpressionStmt<ExpressionValue>& exprStmt) {
     evaluate(*exprStmt.expression);
 }
 
-void Interpreter::visitFunctionStmt(Function<ReturnType>& stmt) {
+void Interpreter::visitFunctionStmt(Function<ExpressionValue>& stmt) {
     FunctionObject function = std::make_shared<LoxFunction>(stmt);
-    ReturnType func(function);
+    ExpressionValue func(function);
     _environment->define(stmt.name._lexeme, func);
 }
 
-void Interpreter::visitPrintStmt(Print<ReturnType>& printStmt) {
-    ReturnType value = evaluate(*printStmt.expression);
+void Interpreter::visitPrintStmt(Print<ExpressionValue>& printStmt) {
+    ExpressionValue value = evaluate(*printStmt.expression);
     std::cout << stringify(value) <<std::endl;
 }
 
-void Interpreter::visitVarStmt(Var<ReturnType>& var) {
-    ReturnType value = nullptr;
+void Interpreter::visitVarStmt(Var<ExpressionValue>& var) {
+    ExpressionValue value = nullptr;
     if(var.initializer != nullptr) {
         value = evaluate(*var.initializer);
     }
     _environment->define(var.name._lexeme, value);
 }
 
-void Interpreter::visitWhileStmt(While<ReturnType>& stmt) {
+void Interpreter::visitReturnStmt(ReturnStmt<ExpressionValue> &returnStmt) {
+    ExpressionValue value = nullptr;
+    if(returnStmt.value != nullptr) {
+        value = evaluate(*returnStmt.value);
+    }
+    throw Return(value);
+}
+
+void Interpreter::visitWhileStmt(While<ExpressionValue>& stmt) {
     while(isTruthy(evaluate(*stmt.condition))) {
         execute(*stmt.body);
     }
 }
 
-void Interpreter::visitBlockStmt(Block<ReturnType>& block) {
-    auto newEnvironment = std::make_shared<Environment<ReturnType>>(_environment);
+void Interpreter::visitBlockStmt(Block<ExpressionValue>& block) {
+    auto newEnvironment = std::make_shared<Environment<ExpressionValue>>(_environment);
     executeBlock(block.statements, newEnvironment);
 }
 
-void Interpreter::visitIfStmt(If<ReturnType>& ifStmt) {
+void Interpreter::visitIfStmt(If<ExpressionValue>& ifStmt) {
     if (isTruthy(evaluate(*ifStmt.condition))) {
       execute(*ifStmt.thenBranch);
     } else if (ifStmt.elseBranch != nullptr) {
@@ -167,19 +175,19 @@ void Interpreter::visitIfStmt(If<ReturnType>& ifStmt) {
     return;
 }
 
-void Interpreter::checkNumberOperand(Token oprtr, ReturnType& operand) {
+void Interpreter::checkNumberOperand(Token oprtr, ExpressionValue& operand) {
     if(std::holds_alternative<double>(operand)) return;
     throw RuntimeError(oprtr, "Operand must be a number");
 }
 
-void Interpreter::checkNumberOperands(Token oprtr, ReturnType& left, ReturnType& right) {
+void Interpreter::checkNumberOperands(Token oprtr, ExpressionValue& left, ExpressionValue& right) {
     if(std::holds_alternative<double>(left)
     && std::holds_alternative<double>(right)) return;
     throw RuntimeError(oprtr, "Operands must be a numbers");
 }
 
 
-void Interpreter::interpret(std::vector<std::unique_ptr<Stmt<ReturnType>>> const& statements) {
+void Interpreter::interpret(std::vector<std::unique_ptr<Stmt<ExpressionValue>>> const& statements) {
     try {
         for(auto& s : statements) {
             execute(*s);
@@ -190,12 +198,12 @@ void Interpreter::interpret(std::vector<std::unique_ptr<Stmt<ReturnType>>> const
     }
 }
 
-void Interpreter::execute(Stmt<ReturnType>& stmt) {
+void Interpreter::execute(Stmt<ExpressionValue>& stmt) {
     stmt.accept(*this);
 }
 
-void Interpreter::executeBlock(std::vector<std::unique_ptr<Stmt<ReturnType>>>& statements, std::shared_ptr<Environment<ReturnType>>& environment) {
-    std::shared_ptr<Environment<ReturnType>> previous = _environment;
+void Interpreter::executeBlock(std::vector<std::unique_ptr<Stmt<ExpressionValue>>>& statements, std::shared_ptr<Environment<ExpressionValue>>& environment) {
+    std::shared_ptr<Environment<ExpressionValue>> previous = _environment;
     try {
         _environment = environment;
         for(auto& s : statements) {
@@ -207,10 +215,15 @@ void Interpreter::executeBlock(std::vector<std::unique_ptr<Stmt<ReturnType>>>& s
         _environment = previous;
         throw re;
     }
+    catch(Return& ret)
+    {
+        _environment = previous;
+        throw ret;
+    }
     _environment = previous;
 }
 
-bool Interpreter::isTruthy(ReturnType const& object){
+bool Interpreter::isTruthy(ExpressionValue const& object){
     if(std::holds_alternative<bool>(object)) {
         return std::get<bool>(object);
     }
@@ -220,7 +233,7 @@ bool Interpreter::isTruthy(ReturnType const& object){
     else return true;
 }
 
-bool Interpreter::isEqual(ReturnType const& left, ReturnType const& right) {
+bool Interpreter::isEqual(ExpressionValue const& left, ExpressionValue const& right) {
     if(std::holds_alternative<nullptr_t>(left) && std::holds_alternative<nullptr_t>(right))
         return true;
     if(std::holds_alternative<double>(left) && std::holds_alternative<double>(right))
@@ -232,7 +245,7 @@ bool Interpreter::isEqual(ReturnType const& left, ReturnType const& right) {
     return false;
 }
 
-std::string Interpreter::stringify(ReturnType const& object) {
+std::string Interpreter::stringify(ExpressionValue const& object) {
     if(std::holds_alternative<bool>(object)) {
         return std::to_string(std::get<bool>(object));
     }
@@ -250,7 +263,7 @@ int Clock::arity() {
     return 0;
 }
 
-ReturnType Clock::call(Interpreter& interpreter, std::vector<ReturnType>& /*arguments*/)
+ExpressionValue Clock::call(Interpreter& interpreter, std::vector<ExpressionValue>& /*arguments*/)
 {
     auto now = std::chrono::system_clock::now();
     auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();

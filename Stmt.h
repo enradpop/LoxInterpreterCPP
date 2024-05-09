@@ -58,6 +58,19 @@ public:
     std::unique_ptr<Expr<R>> expression;
 };
 
+template <typename R> class ReturnStmt: public Stmt<R> {
+public:
+    ReturnStmt(Token const& keyword, Expr<R>* value) : keyword(keyword), value(value)
+    {LOG("new ReturnStmt");}
+    ~ReturnStmt() override {LOG("delete ReturnStmt");}
+    void accept(StmtVisitor<R>& visitor) override {
+        return visitor.visitReturnStmt(*this);
+    }
+    Token keyword;
+    std::unique_ptr<Expr<R>> value;
+    
+};
+
 template<typename R> class Var : public Stmt<R> {
 public:
     Var(Token name, Expr<R>* initializer) : name(name), initializer(initializer)
@@ -117,6 +130,7 @@ public:
     virtual void visitExpressionStmt(ExpressionStmt<R>& stmt) = 0;
     virtual void visitFunctionStmt(Function<R>& stmt) = 0;
     virtual void visitPrintStmt(Print<R>& stmt) = 0;
+    virtual void visitReturnStmt(ReturnStmt<R>& stmt) = 0;
     virtual void visitVarStmt(Var<R>& stmt) = 0;
     virtual void visitWhileStmt(While<R>& stmt) = 0;
     virtual void visitBlockStmt(Block<R>& stmt) = 0;

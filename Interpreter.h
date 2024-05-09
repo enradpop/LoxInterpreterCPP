@@ -10,43 +10,44 @@
 class Clock : public LoxCallable {
 public:
     int arity() override;
-    ReturnType call(Interpreter& interpreter, std::vector<ReturnType>& arguments) override;
+    ExpressionValue call(Interpreter& interpreter, std::vector<ExpressionValue>& arguments) override;
     std::string toString() override;
 };
 
-class Interpreter : public Visitor<ReturnType>, StmtVisitor<ReturnType> {
+class Interpreter : public Visitor<ExpressionValue>, StmtVisitor<ExpressionValue> {
 public:
-    Interpreter() : _environment(std::make_shared<Environment<ReturnType>>()), _globals(_environment) {
-        ReturnType func(std::make_shared<Clock>());
+    Interpreter() : _environment(std::make_shared<Environment<ExpressionValue>>()), _globals(_environment) {
+        ExpressionValue func(std::make_shared<Clock>());
         _globals->define("clock", func);
     }
-    ReturnType visitBinaryExpr(Binary<ReturnType>& expr) override;
-    ReturnType visitGroupingExpr(Grouping<ReturnType>& expr) override;
-    ReturnType visitLiteralExpr(Literal<ReturnType>& expr) override;
-    ReturnType visitLogicalExpr(Logical<ReturnType>& expr) override;
-    ReturnType visitUnaryExpr(Unary<ReturnType>& expr) override;
-    ReturnType visitVariableExpr(Variable<ReturnType>& expr) override;
-    ReturnType visitAssignExpr(Assign<ReturnType>& expr) override;
-    ReturnType visitCallExpr(Call<ReturnType>& expr) override;
-    void checkNumberOperand(Token oprtr, ReturnType& operand);
-    void checkNumberOperands(Token oprtr, ReturnType& left, ReturnType& right);
-    void interpret(std::vector<std::unique_ptr<Stmt<ReturnType>>> const& statements);
-    void visitExpressionStmt(ExpressionStmt<ReturnType>& expression) override;
-    void visitFunctionStmt(Function<ReturnType>& stmt) override;
-    void visitPrintStmt(Print<ReturnType>& print) override;
-    void visitVarStmt(Var<ReturnType>& var) override;
-    void visitWhileStmt(While<ReturnType>& stmt) override;
-    void visitBlockStmt(Block<ReturnType>& block) override;
-    void visitIfStmt(If<ReturnType>& ifStmt) override;
-    std::shared_ptr<Environment<ReturnType>> _environment;
-    std::shared_ptr<Environment<ReturnType>> _globals;
-    void executeBlock(std::vector<std::unique_ptr<Stmt<ReturnType>>>& statements, std::shared_ptr<Environment<ReturnType>>& environment);
+    ExpressionValue visitBinaryExpr(Binary<ExpressionValue>& expr) override;
+    ExpressionValue visitGroupingExpr(Grouping<ExpressionValue>& expr) override;
+    ExpressionValue visitLiteralExpr(Literal<ExpressionValue>& expr) override;
+    ExpressionValue visitLogicalExpr(Logical<ExpressionValue>& expr) override;
+    ExpressionValue visitUnaryExpr(Unary<ExpressionValue>& expr) override;
+    ExpressionValue visitVariableExpr(Variable<ExpressionValue>& expr) override;
+    ExpressionValue visitAssignExpr(Assign<ExpressionValue>& expr) override;
+    ExpressionValue visitCallExpr(Call<ExpressionValue>& expr) override;
+    void checkNumberOperand(Token oprtr, ExpressionValue& operand);
+    void checkNumberOperands(Token oprtr, ExpressionValue& left, ExpressionValue& right);
+    void interpret(std::vector<std::unique_ptr<Stmt<ExpressionValue>>> const& statements);
+    void visitExpressionStmt(ExpressionStmt<ExpressionValue>& expression) override;
+    void visitFunctionStmt(Function<ExpressionValue>& stmt) override;
+    void visitPrintStmt(Print<ExpressionValue>& print) override;
+    void visitReturnStmt(ReturnStmt<ExpressionValue>& returnStmt) override;
+    void visitVarStmt(Var<ExpressionValue>& var) override;
+    void visitWhileStmt(While<ExpressionValue>& stmt) override;
+    void visitBlockStmt(Block<ExpressionValue>& block) override;
+    void visitIfStmt(If<ExpressionValue>& ifStmt) override;
+    std::shared_ptr<Environment<ExpressionValue>> _environment;
+    std::shared_ptr<Environment<ExpressionValue>> _globals;
+    void executeBlock(std::vector<std::unique_ptr<Stmt<ExpressionValue>>>& statements, std::shared_ptr<Environment<ExpressionValue>>& environment);
 private:
-    ReturnType evaluate(Expr<ReturnType>& expr);
-    void execute(Stmt<ReturnType>& stmt);
-    bool isTruthy(ReturnType const& object);
-    bool isEqual(ReturnType const& left, ReturnType const& right);
-    std::string stringify(ReturnType const& object);
+    ExpressionValue evaluate(Expr<ExpressionValue>& expr);
+    void execute(Stmt<ExpressionValue>& stmt);
+    bool isTruthy(ExpressionValue const& object);
+    bool isEqual(ExpressionValue const& left, ExpressionValue const& right);
+    std::string stringify(ExpressionValue const& object);
     
     std::shared_ptr<Clock> _clock;
 };

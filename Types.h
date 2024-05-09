@@ -10,5 +10,12 @@ public:
     {}
     Token _token;
 };
+
 using FunctionObject = std::shared_ptr<LoxCallable>;
-using ReturnType = std::variant<double, std::string, bool, std::nullptr_t, FunctionObject>;
+using ExpressionValue = std::variant<double, std::string, bool, std::nullptr_t, FunctionObject>;
+
+class Return: public std::runtime_error {
+public:
+    Return(ExpressionValue const &value) : std::runtime_error(""), value(value) {}
+    ExpressionValue value;
+};
