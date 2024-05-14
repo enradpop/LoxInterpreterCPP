@@ -129,7 +129,7 @@ void Interpreter::visitExpressionStmt(ExpressionStmt<ExpressionValue>& exprStmt)
 }
 
 void Interpreter::visitFunctionStmt(Function<ExpressionValue>& stmt) {
-    FunctionObject function = std::make_shared<LoxFunction>(stmt);
+    FunctionObject function = std::make_shared<LoxFunction>(stmt, _environment);
     ExpressionValue func(function);
     _environment->define(stmt.name._lexeme, func);
 }

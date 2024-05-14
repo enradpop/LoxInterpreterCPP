@@ -5,12 +5,11 @@
 #include "LoxCallable.h"
 #include "Interpreter.h"
 
-//TODO have to clean up return types; right now we are breaking the contract by instantiating Function with static return type;
 class LoxFunction : public LoxCallable {
 public:
-    LoxFunction(Function<ExpressionValue>& declaration) : declaration(declaration){}
+    LoxFunction(Function<ExpressionValue>& declaration, std::shared_ptr<Environment<ExpressionValue>>& closure) : declaration(declaration), _environment(closure){}
     ExpressionValue call(Interpreter& interpreter, std::vector<ExpressionValue>& arguments) override {
-        auto environment = std::make_shared<Environment<ExpressionValue>>(interpreter._globals);
+        auto environment = std::make_shared<Environment<ExpressionValue>>(_environment);
         for(int i = 0; i < declaration.params.size(); i++) {
             environment->define(declaration.params[i]._lexeme, arguments[i]);
         }
@@ -30,4 +29,5 @@ public:
     }
 private:
     Function<ExpressionValue>& declaration;
+    std::shared_ptr<Environment<ExpressionValue>> _environment;
 };
