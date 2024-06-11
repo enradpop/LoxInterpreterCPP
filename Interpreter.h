@@ -42,12 +42,15 @@ public:
     std::shared_ptr<Environment<ExpressionValue>> _environment;
     std::shared_ptr<Environment<ExpressionValue>> _globals;
     void executeBlock(std::vector<std::unique_ptr<Stmt<ExpressionValue>>>& statements, std::shared_ptr<Environment<ExpressionValue>>& environment);
+    void resolve(Expr<ExpressionValue>& expr, int depth);
 private:
     ExpressionValue evaluate(Expr<ExpressionValue>& expr);
     void execute(Stmt<ExpressionValue>& stmt);
     bool isTruthy(ExpressionValue const& object);
     bool isEqual(ExpressionValue const& left, ExpressionValue const& right);
     std::string stringify(ExpressionValue const& object);
+    ExpressionValue lookUpVariable(Token& name, Expr<ExpressionValue>& expr);
     
     std::shared_ptr<Clock> _clock;
+    std::unordered_map<Expr<ExpressionValue>*, int> _locals;
 };

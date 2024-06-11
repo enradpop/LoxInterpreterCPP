@@ -2,6 +2,7 @@
 #include "Scanner.h"
 #include "Token.h"
 #include "Interpreter.h"
+#include "Resolver.h"
 
 class Lox {
 public:
@@ -16,4 +17,5 @@ private:
     static bool _hadError;
     static bool _hadRuntimeError;
     static Interpreter _interpreter;
+    static Resolver _resolver;
 };

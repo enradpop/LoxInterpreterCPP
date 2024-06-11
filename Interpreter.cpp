@@ -98,12 +98,29 @@ ExpressionValue Interpreter::visitUnaryExpr(Unary<ExpressionValue>& expr) {
 }
 
 ExpressionValue Interpreter::visitVariableExpr(Variable<ExpressionValue>& expr) {
-    return _environment->get(expr.name);
+    //return _environment->get(expr.name);
+    return lookUpVariable(expr.name, expr);
+}
+
+ExpressionValue Interpreter::lookUpVariable(Token& name, Expr<ExpressionValue>& expr) {
+    auto iter = _locals.find(&expr);
+    if(iter != _locals.end()) {
+        return _environment->getAt(iter->second, name._lexeme);
+    }
+    else {
+        return _globals->get(name);
+    }
 }
 
 ExpressionValue Interpreter::visitAssignExpr(Assign<ExpressionValue>& expr) {
     ExpressionValue value = evaluate(*expr.value);
-    _environment->assign(expr.name, value);
+    auto iter = _locals.find(&expr);
+    if(iter != _locals.end()) {
+        _environment->assignAt(iter->second, expr.name, value);
+    }
+    else {
+        _globals->assign(expr.name, value);
+    }
     return value;
 }
 
@@ -257,6 +274,10 @@ std::string Interpreter::stringify(ExpressionValue const& object) {
     }
     else return "null";
 
+}
+
+void Interpreter::resolve(Expr<ExpressionValue>& expr, int depth) {
+    _locals[&expr] = depth;
 }
 
 int Clock::arity() {

@@ -11,6 +11,7 @@ bool Lox::_hadError = false;
 bool Lox::_hadRuntimeError = false;
 
 Interpreter Lox::_interpreter = Interpreter();
+Resolver Lox::_resolver = Resolver(Lox::_interpreter);
 
 bool Lox::runFile(std::string const & path) {
     std::ifstream file(path);
@@ -51,6 +52,8 @@ void Lox::run(std::string const & source) {
     std::vector<std::unique_ptr<Stmt<ExpressionValue>>> statements = parser.parse<ExpressionValue>();
 
     // Stop if there was a syntax error.
+    if (_hadError) return;
+    _resolver.resolve(statements);
     if (_hadError) return;
     _interpreter.interpret(statements);
 
