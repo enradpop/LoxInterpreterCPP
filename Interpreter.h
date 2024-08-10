@@ -38,6 +38,7 @@ public:
     void visitVarStmt(Var<ExpressionValue>& var) override;
     void visitWhileStmt(While<ExpressionValue>& stmt) override;
     void visitBlockStmt(Block<ExpressionValue>& block) override;
+    void visitClassStmt(Class<ExpressionValue>& stmt) override;
     void visitIfStmt(If<ExpressionValue>& ifStmt) override;
     std::shared_ptr<Environment<ExpressionValue>> _environment;
     std::shared_ptr<Environment<ExpressionValue>> _globals;

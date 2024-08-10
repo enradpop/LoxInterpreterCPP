@@ -97,6 +97,19 @@ public:
     std::vector<std::unique_ptr<Stmt<R>>> statements;
 };
 
+template<typename R> class Class : public Stmt<R> {
+public:
+    Class(Token name, std::vector<std::unique_ptr<Function<R>>>& functions) :
+    name(name), functions(std::move(functions))
+    {LOG("new Class");}
+    ~Class() override {LOG("delete Class");}
+    void accept(StmtVisitor<R>& visitor) override {
+        visitor.visitClassStmt(*this);
+    }
+    Token name;
+    std::vector<std::unique_ptr<Function<R>>> functions;
+};
+
 template<typename R> class If : public Stmt<R> {
 public:
     If(Expr<R>* condition, Stmt<R>* thenBranch, Stmt<R>* elseBranch)
@@ -134,5 +147,6 @@ public:
     virtual void visitVarStmt(Var<R>& stmt) = 0;
     virtual void visitWhileStmt(While<R>& stmt) = 0;
     virtual void visitBlockStmt(Block<R>& stmt) = 0;
+    virtual void visitClassStmt(Class<R>& stmt) = 0;
     virtual void visitIfStmt(If<R>& stmt) = 0;
 };

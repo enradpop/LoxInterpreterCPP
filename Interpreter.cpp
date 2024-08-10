@@ -1,6 +1,7 @@
 #include "Interpreter.h"
 #include "Lox.h"
 #include "LoxFunction.h"
+#include "LoxClass.h"
 #include <chrono>
 
 #include <vector>
@@ -183,6 +184,14 @@ void Interpreter::visitBlockStmt(Block<ExpressionValue>& block) {
     executeBlock(block.statements, newEnvironment);
 }
 
+void Interpreter::visitClassStmt(Class<ExpressionValue>& stmt) {
+    ExpressionValue nullValue = nullptr;
+    _environment->define(stmt.name._lexeme, nullValue);
+    auto klass = std::make_shared<LoxClass>(stmt.name._lexeme);
+    ExpressionValue klassValue(klass);
+    _environment->assign(stmt.name, klassValue);
+}
+
 void Interpreter::visitIfStmt(If<ExpressionValue>& ifStmt) {
     if (isTruthy(evaluate(*ifStmt.condition))) {
       execute(*ifStmt.thenBranch);
@@ -271,6 +280,9 @@ std::string Interpreter::stringify(ExpressionValue const& object) {
     }
     else if(std::holds_alternative<std::string>(object)) {
         return std::get<std::string>(object);
+    }
+    else if(std::holds_alternative<ClassObject>(object)) {
+        return std::get<ClassObject>(object)->toString();
     }
     else return "null";
 

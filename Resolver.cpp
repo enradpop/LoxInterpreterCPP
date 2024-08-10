@@ -7,6 +7,11 @@ void Resolver::visitBlockStmt(Block<ExpressionValue>& block) {
     endScope();
 }
 
+void Resolver::visitClassStmt(Class<ExpressionValue>& stmt) {
+    declare(stmt.name);
+    define(stmt.name);
+}
+
 void Resolver::resolve(std::vector<std::unique_ptr<Stmt<ExpressionValue>>>& statements) {
     for(auto& s : statements) {
         resolve(*s);

@@ -14,6 +14,7 @@ public:
     Resolver(Interpreter& interpreter) : _interpreter(interpreter) {}
 
     void visitBlockStmt(Block<ExpressionValue>& block) override;
+    void visitClassStmt(Class<ExpressionValue>& stmt) override;
     void visitVarStmt(Var<ExpressionValue>& var) override;
     void visitFunctionStmt(Function<ExpressionValue>& stmt) override;
     void visitExpressionStmt(ExpressionStmt<ExpressionValue>& expression) override;

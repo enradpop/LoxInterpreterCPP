@@ -3,6 +3,7 @@
 #include <variant>
 
 class LoxCallable;
+class LoxClass;
 
 class RuntimeError : public std::runtime_error {
 public:
@@ -12,7 +13,8 @@ public:
 };
 
 using FunctionObject = std::shared_ptr<LoxCallable>;
-using ExpressionValue = std::variant<double, std::string, bool, std::nullptr_t, FunctionObject>;
+using ClassObject = std::shared_ptr<LoxClass>;
+using ExpressionValue = std::variant<double, std::string, bool, std::nullptr_t, FunctionObject, ClassObject>;
 
 class Return: public std::runtime_error {
 public:

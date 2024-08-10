@@ -47,10 +47,11 @@ private:
         consume(Token::RIGHT_BRACE, "Expect '}' after block.");
         return statements;
     }
-    // declaration    → funDecl | varDecl | statement 
+    // declaration    → classDecl | funDecl | varDecl | statement 
     template<typename R>
     Stmt<R>* declaration() {
         try {
+            if(match({Token::CLASS})) return classDeclaration<R>();
             if(match({Token::FUN})) return function<R>("function");
             if(match({Token::VAR})) return varDeclaration<R>();
             return statement<R>();
@@ -59,6 +60,18 @@ private:
             synchronize();
             return nullptr;
         }
+    }
+    // classDecl      → "class" IDENTIFIER "{" function* "}" ;
+    template<typename R>
+    Class<R>* classDeclaration() {
+        Token name = consume(Token::IDENTIFIER, "Expect class name.");
+        consume(Token::LEFT_BRACE, "Expect '{' before class body.");
+        std::vector<std::unique_ptr<Function<R>>> methods;
+        while (!check(Token::RIGHT_BRACE) && !isAtEnd()) {
+            methods.emplace_back(function<R>("method"));
+        }
+        consume(Token::RIGHT_BRACE, "Expect '}' after class body.");
+        return new Class<R>(name, methods);
     }
     // statement      → exprStmt | forStmt | ifStmt | printStmt | returnStmt | whileStmt | block;
     template<typename R>
@@ -179,7 +192,7 @@ private:
     // function       → IDENTIFIER "(" parameters? ")" block
     // parameters     → IDENTIFIER ( "," IDENTIFIER )*
     template<typename R>
-    Stmt<R>* function(std::string const& kind) {
+    Function<R>* function(std::string const& kind) {
         Token name = consume(Token::IDENTIFIER, "Expect " + kind + " name.");
         consume(Token::LEFT_PAREN, "Expect '(' after " + kind + " name.");
         std::vector<Token> parameters;
