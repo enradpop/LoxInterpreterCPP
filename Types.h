@@ -1,9 +1,14 @@
 #pragma once
 #include "Token.h"
 #include <variant>
+#include <memory>
+#include <variant>
+#include <stdexcept>
+#include <vector>
 
 class LoxCallable;
 class LoxClass;
+class LoxInstance;
 
 class RuntimeError : public std::runtime_error {
 public:
@@ -12,9 +17,9 @@ public:
     Token _token;
 };
 
-using FunctionObject = std::shared_ptr<LoxCallable>;
-using ClassObject = std::shared_ptr<LoxClass>;
-using ExpressionValue = std::variant<double, std::string, bool, std::nullptr_t, FunctionObject, ClassObject>;
+using CallableObject = std::shared_ptr<LoxCallable>;
+using LoxInstanceValue = std::shared_ptr<LoxInstance>;
+using ExpressionValue = std::variant<double, std::string, bool, std::nullptr_t, CallableObject, LoxInstanceValue>;
 
 class Return: public std::runtime_error {
 public:

@@ -2,6 +2,7 @@
 #include "Lox.h"
 #include "LoxFunction.h"
 #include "LoxClass.h"
+#include "LoxInstance.h"
 #include <chrono>
 
 #include <vector>
@@ -132,10 +133,10 @@ ExpressionValue Interpreter::visitCallExpr(Call<ExpressionValue>& expr) {
     {
         arguments.emplace_back(evaluate(*argument));
     }
-    if(!std::holds_alternative<FunctionObject>(callee)) {
+    if(!std::holds_alternative<CallableObject>(callee)) {
         throw RuntimeError(expr.paren, "Can only call functions and classes.");
     }
-    FunctionObject function =  std::get<FunctionObject>(callee);
+    CallableObject function =  std::get<CallableObject>(callee);
     if (arguments.size() != function->arity()) {
       throw RuntimeError(expr.paren, "Expected " + std::to_string(function->arity()) + " arguments but got " + std::to_string(arguments.size()) + ".");
     }
@@ -147,7 +148,7 @@ void Interpreter::visitExpressionStmt(ExpressionStmt<ExpressionValue>& exprStmt)
 }
 
 void Interpreter::visitFunctionStmt(Function<ExpressionValue>& stmt) {
-    FunctionObject function = std::make_shared<LoxFunction>(stmt, _environment);
+    CallableObject function = std::make_shared<LoxFunction>(stmt, _environment);
     ExpressionValue func(function);
     _environment->define(stmt.name._lexeme, func);
 }
@@ -187,7 +188,8 @@ void Interpreter::visitBlockStmt(Block<ExpressionValue>& block) {
 void Interpreter::visitClassStmt(Class<ExpressionValue>& stmt) {
     ExpressionValue nullValue = nullptr;
     _environment->define(stmt.name._lexeme, nullValue);
-    auto klass = std::make_shared<LoxClass>(stmt.name._lexeme);
+    LoxClass* ptrKlass = new LoxClass(stmt.name._lexeme);
+    std::shared_ptr<LoxCallable> klass(ptrKlass);
     ExpressionValue klassValue(klass);
     _environment->assign(stmt.name, klassValue);
 }
@@ -281,8 +283,11 @@ std::string Interpreter::stringify(ExpressionValue const& object) {
     else if(std::holds_alternative<std::string>(object)) {
         return std::get<std::string>(object);
     }
-    else if(std::holds_alternative<ClassObject>(object)) {
-        return std::get<ClassObject>(object)->toString();
+    else if(std::holds_alternative<CallableObject>(object)) {
+        return std::get<CallableObject>(object)->toString();
+    }
+    else if(std::holds_alternative<LoxInstanceValue>(object)) {
+        return std::get<LoxInstanceValue>(object)->toString();
     }
     else return "null";
 
