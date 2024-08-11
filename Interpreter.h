@@ -24,10 +24,12 @@ public:
     ExpressionValue visitGroupingExpr(Grouping<ExpressionValue>& expr) override;
     ExpressionValue visitLiteralExpr(Literal<ExpressionValue>& expr) override;
     ExpressionValue visitLogicalExpr(Logical<ExpressionValue>& expr) override;
+    ExpressionValue visitSetExpr(Set<ExpressionValue>& expr) override;
     ExpressionValue visitUnaryExpr(Unary<ExpressionValue>& expr) override;
     ExpressionValue visitVariableExpr(Variable<ExpressionValue>& expr) override;
     ExpressionValue visitAssignExpr(Assign<ExpressionValue>& expr) override;
     ExpressionValue visitCallExpr(Call<ExpressionValue>& expr) override;
+    ExpressionValue visitGetExpr(Get<ExpressionValue>& expr) override;
     void checkNumberOperand(Token oprtr, ExpressionValue& operand);
     void checkNumberOperands(Token oprtr, ExpressionValue& left, ExpressionValue& right);
     void interpret(std::vector<std::unique_ptr<Stmt<ExpressionValue>>> const& statements);

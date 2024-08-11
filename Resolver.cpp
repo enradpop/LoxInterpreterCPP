@@ -149,6 +149,11 @@ ExpressionValue Resolver::visitCallExpr(Call<ExpressionValue>& expr) {
     return nullptr;
 }
 
+ExpressionValue Resolver::visitGetExpr(Get<ExpressionValue>& expr) {
+    resolve(*expr.object);
+    return nullptr;
+}
+
 ExpressionValue Resolver::visitGroupingExpr(Grouping<ExpressionValue>& expr) {
     resolve(*expr.expression);
     return nullptr;
@@ -161,6 +166,12 @@ ExpressionValue Resolver::visitLiteralExpr(Literal<ExpressionValue>& expr) {
 ExpressionValue Resolver::visitLogicalExpr(Logical<ExpressionValue>& expr) {
     resolve(*expr.left);
     resolve(*expr.right);
+    return nullptr;
+}
+
+ExpressionValue Resolver::visitSetExpr(Set<ExpressionValue>& expr) {
+    resolve(*expr.value);
+    resolve(*expr.object);
     return nullptr;
 }
 

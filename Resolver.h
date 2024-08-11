@@ -26,9 +26,11 @@ public:
     ExpressionValue visitAssignExpr(Assign<ExpressionValue>& expr) override;
     ExpressionValue visitBinaryExpr(Binary<ExpressionValue>& expr) override;
     ExpressionValue visitCallExpr(Call<ExpressionValue>& expr) override;
+    ExpressionValue visitGetExpr(Get<ExpressionValue>& expr) override;
     ExpressionValue visitGroupingExpr(Grouping<ExpressionValue>& expr) override;
     ExpressionValue visitLiteralExpr(Literal<ExpressionValue>& expr) override;
     ExpressionValue visitLogicalExpr(Logical<ExpressionValue>& expr) override;
+    ExpressionValue visitSetExpr(Set<ExpressionValue>& expr) override;
     ExpressionValue visitUnaryExpr(Unary<ExpressionValue>& expr) override;
     void resolve(std::vector<std::unique_ptr<Stmt<ExpressionValue>>>& statements);
 private:

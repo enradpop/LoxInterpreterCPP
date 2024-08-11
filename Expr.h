@@ -15,6 +15,7 @@ template <typename R> class Expr {
 public:
     virtual R accept(Visitor<R>& visitor) = 0;
     virtual bool isLValue() {return false;}
+    virtual bool isGetter() {return false;}
     virtual ~Expr(){};
 };
 
@@ -49,6 +50,20 @@ public:
     std::unique_ptr<Expr<R>> callee;
     Token paren;
     std::vector<std::unique_ptr<Expr<R>>> arguments;
+};
+
+template <typename R> class Get: public Expr<R> {
+public:
+    Get(Expr<R>* expression, Token const& name) : object(expression), name(name)
+    {LOG("new Get");}
+    ~Get() override {LOG("delete Get");}
+    R accept(Visitor<R>& visitor) override {
+        return visitor.visitGetExpr(*this);
+    }
+    bool isGetter() override { return true;}
+
+    std::unique_ptr<Expr<R>> object;
+    Token name;
 };
 
 template <typename R> class Grouping: public Expr<R> {
@@ -92,6 +107,18 @@ public:
 
     std::unique_ptr<Expr<R>> left, right;
     Token oprtr;
+};
+
+template <typename R> class Set: public Expr<R> {
+public:
+    Set(Expr<R>* object, Expr<R>* value,  Token const& name) : object(object), value(value), name(name)
+    {LOG("new Set");}
+    ~Set() override {LOG("delete Set");}
+    R accept(Visitor<R>& visitor) override {
+        return visitor.visitSetExpr(*this);
+    }
+    std::unique_ptr<Expr<R>> object, value;
+    Token name;
 };
 
 template <typename R> class Unary: public Expr<R> {
@@ -140,8 +167,10 @@ template <typename R> class Visitor {
 public:
     virtual R visitBinaryExpr(Binary<R>& expr) = 0;
     virtual R visitCallExpr(Call<R>& expr) = 0;
+    virtual R visitGetExpr(Get<R>& expr) = 0;
     virtual R visitGroupingExpr(Grouping<R>& expr) = 0;
     virtual R visitLogicalExpr(Logical<R>& expr) = 0;
+    virtual R visitSetExpr(Set<R>& expr) = 0;
     virtual R visitLiteralExpr(Literal<R>& expr) = 0;
     virtual R visitUnaryExpr(Unary<R>& expr) = 0;
     virtual R visitVariableExpr(Variable<R>& expr) = 0;

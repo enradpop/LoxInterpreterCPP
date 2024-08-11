@@ -225,7 +225,7 @@ private:
     Expr<R>* expression() {
         return assignment<R>();
     }
-    //assignment     → IDENTIFIER "=" assignment | logic_or
+    //assignment     → ( call "." )? IDENTIFIER "=" assignment | logic_or
     template<typename R>
     Expr<R>* assignment() {
         Expr<R>* expr = logic_or<R>();
@@ -236,6 +236,12 @@ private:
                 Token name = static_cast<Variable<R>*>(expr)->name;
                 delete expr;
                 return new Assign<R>(name, value);
+            }
+            else if(expr->isGetter()) {
+                Token name = static_cast<Get<R>*>(expr)->name;
+                Expr<R>* object = static_cast<Get<R>*>(expr)->object.release();
+                delete expr;
+                return new Set<R>(object, value, name);
             }
             error(equals, "Invalid assignment target.");
         }
@@ -335,7 +341,7 @@ private:
 
         return new Call<R>(callee, paren, arguments);
     }
-    // call           → primary ( "(" arguments? ")" )*
+    // call           → primary ( "(" arguments? ")" | "." IDENTIFIER )*
     template<typename R>
     Expr<R>* call() {
         Expr<R>* expr = primary<R>();
@@ -343,7 +349,11 @@ private:
         while (true) { 
             if (match({Token::LEFT_PAREN})) {
                 expr = finishCall<R>(expr);
-            } 
+            }
+            else if (match({Token::DOT})) {
+                Token name =  consume(Token::IDENTIFIER, "Expect property name after '.'.");
+                expr = new Get<R>(expr, name);
+            }
             else {
                 break;
             }
