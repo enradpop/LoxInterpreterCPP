@@ -206,7 +206,11 @@ void Interpreter::visitBlockStmt(Block<ExpressionValue>& block) {
 void Interpreter::visitClassStmt(Class<ExpressionValue>& stmt) {
     ExpressionValue nullValue = nullptr;
     _environment->define(stmt.name._lexeme, nullValue);
-    LoxClass* ptrKlass = new LoxClass(stmt.name._lexeme);
+    std::unordered_map<std::string, std::shared_ptr<LoxFunction>> methods;
+    for(auto& method : stmt.methods) {
+        methods[method->name._lexeme] = std::make_shared<LoxFunction>(*method, _environment);
+    }
+    LoxClass* ptrKlass = new LoxClass(stmt.name._lexeme, methods);
     std::shared_ptr<LoxCallable> klass(ptrKlass);
     ExpressionValue klassValue(klass);
     _environment->assign(stmt.name, klassValue);

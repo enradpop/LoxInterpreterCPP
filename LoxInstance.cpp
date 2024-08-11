@@ -5,6 +5,9 @@ ExpressionValue LoxInstance::get(Token const& name) {
     if(value != _fields.end()) {
         return value->second;
     }
+    CallableObject method = klass.findMethod(name._lexeme);
+    if(method) return method;
+
     throw RuntimeError(name, "Undefined property '" + name._lexeme + "'.");
 }
 

@@ -10,6 +10,10 @@ void Resolver::visitBlockStmt(Block<ExpressionValue>& block) {
 void Resolver::visitClassStmt(Class<ExpressionValue>& stmt) {
     declare(stmt.name);
     define(stmt.name);
+    for(auto& method : stmt.methods) {//METHODS
+        FunctionType declaration = FunctionType::METHOD;
+        resolveFunction(*method, declaration);
+    }
 }
 
 void Resolver::resolve(std::vector<std::unique_ptr<Stmt<ExpressionValue>>>& statements) {

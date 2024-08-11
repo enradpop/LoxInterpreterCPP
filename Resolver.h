@@ -9,7 +9,8 @@ class Resolver : public Visitor<ExpressionValue>, StmtVisitor<ExpressionValue>{
 public:
     enum class FunctionType : uint8_t {
         NONE,
-        FUNCTION
+        FUNCTION,
+        METHOD
     };
     Resolver(Interpreter& interpreter) : _interpreter(interpreter) {}
 

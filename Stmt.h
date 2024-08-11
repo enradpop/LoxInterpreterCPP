@@ -3,6 +3,7 @@
 #include <vector>
 #include "Token.h"
 #include "Logger.h"
+#include "Expr.h"
 // forward declarations
 template <typename R> class Stmt;
 template <typename R> class ExpressionStmt;
@@ -99,15 +100,15 @@ public:
 
 template<typename R> class Class : public Stmt<R> {
 public:
-    Class(Token name, std::vector<std::unique_ptr<Function<R>>>& functions) :
-    name(name), functions(std::move(functions))
+    Class(Token name, std::vector<std::unique_ptr<Function<R>>>& methods) :
+    name(name), methods(std::move(methods))
     {LOG("new Class");}
     ~Class() override {LOG("delete Class");}
     void accept(StmtVisitor<R>& visitor) override {
         visitor.visitClassStmt(*this);
     }
     Token name;
-    std::vector<std::unique_ptr<Function<R>>> functions;
+    std::vector<std::unique_ptr<Function<R>>> methods;
 };
 
 template<typename R> class If : public Stmt<R> {
