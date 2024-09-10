@@ -10,10 +10,13 @@ void Resolver::visitBlockStmt(Block<ExpressionValue>& block) {
 void Resolver::visitClassStmt(Class<ExpressionValue>& stmt) {
     declare(stmt.name);
     define(stmt.name);
+    beginScope();
+    _scopes.back()->emplace("this", true);
     for(auto& method : stmt.methods) {//METHODS
         FunctionType declaration = FunctionType::METHOD;
         resolveFunction(*method, declaration);
     }
+    endScope();
 }
 
 void Resolver::resolve(std::vector<std::unique_ptr<Stmt<ExpressionValue>>>& statements) {
@@ -176,6 +179,11 @@ ExpressionValue Resolver::visitLogicalExpr(Logical<ExpressionValue>& expr) {
 ExpressionValue Resolver::visitSetExpr(Set<ExpressionValue>& expr) {
     resolve(*expr.value);
     resolve(*expr.object);
+    return nullptr;
+}
+
+ExpressionValue Resolver::visitThisExpr(This<ExpressionValue>& expr) {
+    resolveLocal(expr, expr.keyword);
     return nullptr;
 }
 

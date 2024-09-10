@@ -32,6 +32,7 @@ public:
     ExpressionValue visitLiteralExpr(Literal<ExpressionValue>& expr) override;
     ExpressionValue visitLogicalExpr(Logical<ExpressionValue>& expr) override;
     ExpressionValue visitSetExpr(Set<ExpressionValue>& expr) override;
+    ExpressionValue visitThisExpr(This<ExpressionValue>& expr) override;
     ExpressionValue visitUnaryExpr(Unary<ExpressionValue>& expr) override;
     void resolve(std::vector<std::unique_ptr<Stmt<ExpressionValue>>>& statements);
 private:

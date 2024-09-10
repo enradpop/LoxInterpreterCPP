@@ -93,6 +93,10 @@ ExpressionValue Interpreter::visitSetExpr(Set<ExpressionValue>& expr) {
     return value;
 }
 
+ExpressionValue Interpreter::visitThisExpr(This<ExpressionValue>& expr) {
+    return lookUpVariable(expr.keyword, expr);
+}
+
 ExpressionValue Interpreter::visitUnaryExpr(Unary<ExpressionValue>& expr) {
     ExpressionValue right =  evaluate(*expr.right);
     switch(expr.oprtr._type) {
@@ -155,8 +159,8 @@ ExpressionValue Interpreter::visitCallExpr(Call<ExpressionValue>& expr) {
 ExpressionValue Interpreter::visitGetExpr(Get<ExpressionValue>& expr) {
     ExpressionValue object = evaluate(*expr.object);
     if(std::holds_alternative<LoxInstanceValue>(object)) {
-        LoxInstanceValue instance = std::get<LoxInstanceValue>(object);
-        return instance->get(expr.name);
+        LoxInstanceValue& instance = std::get<LoxInstanceValue>(object);
+        return instance->get(expr.name, object);
     }
     throw RuntimeError(expr.name, "Only instances have properties.");
 }

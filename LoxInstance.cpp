@@ -1,13 +1,14 @@
 #include "LoxInstance.h"
 
-ExpressionValue LoxInstance::get(Token const& name) {
+ExpressionValue LoxInstance::get(Token const& name, ExpressionValue& instance) {
     auto value = _fields.find(name._lexeme);
     if(value != _fields.end()) {
         return value->second;
     }
     CallableObject method = klass.findMethod(name._lexeme);
-    if(method) return method;
-
+    if(method) {
+        return method->bind(instance);
+    }
     throw RuntimeError(name, "Undefined property '" + name._lexeme + "'.");
 }
 

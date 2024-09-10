@@ -370,6 +370,7 @@ private:
         if(match({Token::NIL})) return new Literal<R>({Token::NIL, "nil", nullptr, 1});
         if(match({Token::NUMBER})) return new Literal<R>({Token::NUMBER, previous()._lexeme, previous()._literal, 1});
         if(match({Token::STRING})) return new Literal<R>({Token::STRING, previous()._lexeme, previous()._literal, 1});
+        if(match({Token::THIS})) return new This<R>(previous());
         if(match({Token::IDENTIFIER})) return new Variable<R>(previous());
         if(match({Token::LEFT_PAREN})) {
             Expr<R>* expr = expression<R>();

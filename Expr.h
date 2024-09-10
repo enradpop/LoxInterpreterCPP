@@ -121,6 +121,17 @@ public:
     Token name;
 };
 
+template <typename R> class This: public Expr<R> {
+public:
+    This(Token const& keyword) : keyword(keyword)
+    {LOG("new This");}
+    ~This() override {LOG("delete This");}
+    R accept(Visitor<R>& visitor) override {
+        return visitor.visitThisExpr(*this);
+    }
+    Token keyword;
+};
+
 template <typename R> class Unary: public Expr<R> {
 public:
     Unary(Token const& oprtr, Expr<R>* right): oprtr(oprtr), right(right)
@@ -172,6 +183,7 @@ public:
     virtual R visitLogicalExpr(Logical<R>& expr) = 0;
     virtual R visitSetExpr(Set<R>& expr) = 0;
     virtual R visitLiteralExpr(Literal<R>& expr) = 0;
+    virtual R visitThisExpr(This<R>& expr) = 0;
     virtual R visitUnaryExpr(Unary<R>& expr) = 0;
     virtual R visitVariableExpr(Variable<R>& expr) = 0;
     virtual R visitAssignExpr(Assign<R>& expr) = 0;
