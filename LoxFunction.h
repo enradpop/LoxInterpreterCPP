@@ -8,12 +8,13 @@
 
 class LoxFunction : public LoxCallable {
 public:
-    LoxFunction(Function<ExpressionValue>& declaration, std::shared_ptr<Environment<ExpressionValue>>& closure) : declaration(declaration), _environment(closure){
+    LoxFunction(Function<ExpressionValue>& declaration, std::shared_ptr<Environment<ExpressionValue>>& closure, bool isInitializer) : 
+    declaration(declaration), _environment(closure), _isInitializer(isInitializer) {
         LOG("new LoxFunction")
     }
     ~LoxFunction() override {LOG("delete LoxFunction")};
     ExpressionValue call(Interpreter& interpreter, std::vector<ExpressionValue>& arguments) override;
-    ExpressionValue bind(ExpressionValue& instance) override;
+    CallableObject bind(ExpressionValue& instance) override;
     int arity() override {
         return declaration.params.size();
     }
@@ -23,4 +24,5 @@ public:
 private:
     Function<ExpressionValue>& declaration;
     std::shared_ptr<Environment<ExpressionValue>> _environment;
+    bool _isInitializer;
 };

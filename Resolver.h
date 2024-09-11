@@ -10,7 +10,13 @@ public:
     enum class FunctionType : uint8_t {
         NONE,
         FUNCTION,
+        INITIALIZER,
         METHOD
+    };
+
+    enum class ClassType : uint8_t {
+        NONE,
+        CLASS
     };
     Resolver(Interpreter& interpreter) : _interpreter(interpreter) {}
 
@@ -48,4 +54,5 @@ private:
     Interpreter& _interpreter;
     std::vector<std::unique_ptr<std::unordered_map<std::string, bool>>> _scopes;
     FunctionType currentFunction = FunctionType::NONE;
+    ClassType currentClass = ClassType::NONE;
 };

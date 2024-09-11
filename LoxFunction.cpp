@@ -12,13 +12,14 @@ ExpressionValue LoxFunction::call(Interpreter& interpreter, std::vector<Expressi
     catch (Return&  returnValue) {
         return returnValue.value;
     }
+    std::string This = "this";
+    if (_isInitializer) return _environment->getAt(0, This);
     return nullptr;
 }
 
-ExpressionValue LoxFunction::bind(ExpressionValue& instance) {
+CallableObject LoxFunction::bind(ExpressionValue& instance) {
     auto environment = std::make_shared<Environment<ExpressionValue>>(_environment);
-    //std::cout << "ref cnt " << instance.use_count() << std::endl;
     environment->define("this", instance);
-    std::shared_ptr<LoxFunction> func =  std::make_shared<LoxFunction>(declaration, environment);
+    std::shared_ptr<LoxFunction> func =  std::make_shared<LoxFunction>(declaration, environment, _isInitializer);
     return func;
 }

@@ -7,7 +7,7 @@ class Interpreter;
 class LoxCallable {
 public:
     virtual int arity() = 0;
-    virtual ExpressionValue bind(ExpressionValue& instance) { return nullptr; }
+    virtual CallableObject bind(ExpressionValue& instance) { return nullptr; }
     virtual ExpressionValue call(Interpreter& interpreter, std::vector<ExpressionValue>& arguments) = 0;
     virtual std::string toString() = 0;
     LoxCallable() {LOG("new LoxCallable");}

@@ -8,15 +8,21 @@ void Resolver::visitBlockStmt(Block<ExpressionValue>& block) {
 }
 
 void Resolver::visitClassStmt(Class<ExpressionValue>& stmt) {
+    ClassType enclosingClass = currentClass;
+    currentClass = ClassType::CLASS;
     declare(stmt.name);
     define(stmt.name);
     beginScope();
     _scopes.back()->emplace("this", true);
     for(auto& method : stmt.methods) {//METHODS
         FunctionType declaration = FunctionType::METHOD;
+        if (method->name._lexeme =="init") {
+            declaration = FunctionType::INITIALIZER;
+        }
         resolveFunction(*method, declaration);
     }
     endScope();
+    currentClass = enclosingClass;
 }
 
 void Resolver::resolve(std::vector<std::unique_ptr<Stmt<ExpressionValue>>>& statements) {
@@ -130,10 +136,13 @@ void Resolver::visitPrintStmt(Print<ExpressionValue>& print) {
 
 void Resolver::visitReturnStmt(ReturnStmt<ExpressionValue>& returnStmt) {
     if (currentFunction == FunctionType::NONE) {
-      Lox::error(returnStmt.keyword, "Can't return from top-level code.");
+        Lox::error(returnStmt.keyword, "Can't return from top-level code.");
     }
     if (returnStmt.value != nullptr) {
-      resolve(*returnStmt.value);
+        if (currentFunction == FunctionType::INITIALIZER) {
+            Lox::error(returnStmt.keyword, "Can't return a value from an initializer.");
+        }
+        resolve(*returnStmt.value);
     }
 }
 
@@ -183,6 +192,10 @@ ExpressionValue Resolver::visitSetExpr(Set<ExpressionValue>& expr) {
 }
 
 ExpressionValue Resolver::visitThisExpr(This<ExpressionValue>& expr) {
+    if(currentClass == ClassType::NONE) {
+        Lox::error(expr.keyword, "Can't use 'this' outside of a class.");
+        return nullptr;
+    }
     resolveLocal(expr, expr.keyword);
     return nullptr;
 }

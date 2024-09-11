@@ -7,7 +7,7 @@ public:
     ExpressionValue call(Interpreter& interpreter, std::vector<ExpressionValue>& arguments) override;
     std::string toString() override { return _name;}
     CallableObject findMethod(std::string name);
-    int arity() override { return 0;}
+    int arity() override;
     std::string _name;
     std::unordered_map<std::string, std::shared_ptr<LoxFunction>> methods;
 };

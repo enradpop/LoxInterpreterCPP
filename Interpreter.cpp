@@ -170,7 +170,7 @@ void Interpreter::visitExpressionStmt(ExpressionStmt<ExpressionValue>& exprStmt)
 }
 
 void Interpreter::visitFunctionStmt(Function<ExpressionValue>& stmt) {
-    CallableObject function = std::make_shared<LoxFunction>(stmt, _environment);
+    CallableObject function = std::make_shared<LoxFunction>(stmt, _environment, false);
     ExpressionValue func(function);
     _environment->define(stmt.name._lexeme, func);
 }
@@ -212,7 +212,7 @@ void Interpreter::visitClassStmt(Class<ExpressionValue>& stmt) {
     _environment->define(stmt.name._lexeme, nullValue);
     std::unordered_map<std::string, std::shared_ptr<LoxFunction>> methods;
     for(auto& method : stmt.methods) {
-        methods[method->name._lexeme] = std::make_shared<LoxFunction>(*method, _environment);
+        methods[method->name._lexeme] = std::make_shared<LoxFunction>(*method, _environment, method->name._lexeme == "init");
     }
     LoxClass* ptrKlass = new LoxClass(stmt.name._lexeme, methods);
     std::shared_ptr<LoxCallable> klass(ptrKlass);

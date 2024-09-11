@@ -6,7 +6,11 @@
 #include <memory>
 
 ExpressionValue LoxClass::call(Interpreter& interpreter, std::vector<ExpressionValue>& arguments) {
-    auto instance = std::make_shared<LoxInstance>(*this);
+    ExpressionValue instance = std::make_shared<LoxInstance>(*this);
+    CallableObject initializer = findMethod("init");
+    if(initializer) {
+        initializer->bind(instance)->call(interpreter, arguments);
+    }
     return instance;
 }
 
@@ -16,4 +20,10 @@ CallableObject LoxClass::findMethod(std::string name) {
         return value->second;
     }
     return nullptr;
+}
+
+int LoxClass::arity() {
+    CallableObject initializer = findMethod("init");
+    if (!initializer) return 0;
+    return initializer->arity();
 }
